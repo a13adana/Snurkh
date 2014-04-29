@@ -1,0 +1,35 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.1.52</VERSION>
+ <DEVICE>"ATmega328P"</DEVICE>
+ <WORKING_DIR>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.39.1005\avrassembler\Include</DIR>
+  <DIR></DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Snurkh.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.39.1005\avrassembler\Include\m328Pdef.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Debug/Snurkh.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>Snurkh.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>Snurkh.map</FILE>
+  <FILE>Snurkh.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <light_rows><FILE>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>20</LINE></light_rows>
+  <init><FILE>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>26</LINE></init>
+  <set_bit_at><FILE>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>257</LINE></set_bit_at>
+  <main><FILE>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>87</LINE></main>
+  <render_loop1><FILE>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>99</LINE></render_loop1>
+  <render_loop2><FILE>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>169</LINE></render_loop2>
+  <__do_lolStuffOMG12__><FILE>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>256</LINE></__do_lolStuffOMG12__>
+  <set_bit><FILE>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>258</LINE></set_bit>
+  <loop_start_shifty><FILE>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>272</LINE></loop_start_shifty>
+  <out_of_loop><FILE>P:\Documents\Atmel Studio\6.1\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>278</LINE></out_of_loop>
+ </LABELS>
+</ASSEMBLER_INFO>
