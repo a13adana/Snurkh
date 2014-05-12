@@ -25,6 +25,8 @@ light_rows:	.BYTE		8
 .CSEG
 .ORG 0x0000
 	jmp init
+.ORG 0x0020 // Timer overflow interrupt
+	jmp on_timer_interrupt
 .ORG INT_VECTORS_SIZE
 init:
 // --- Initialise stack pointer ---
@@ -57,6 +59,7 @@ init:
 	ldi	tmp2, 0b00000000
 	st	X+, tmp2
 
+	// Code to light up corners
 	/*ldi arg0, 0
 	ldi arg1, 0
 	call set_bit_at
@@ -71,9 +74,9 @@ init:
 
 	ldi arg0, 7
 	ldi arg1, 7
-	call set_bit_at
+	call set_bit_at*/
 
-	*/
+	
 
 	// --- Set DDR registers to output on LEDs and input on everything else ---
 	ldi tmp0 , 0b00111111
@@ -88,7 +91,7 @@ init:
 	out PORTC, tmp0 
 	out PORTD, tmp0 
 
-	// --- Set A/D converter stuff
+	// --- Set A/D converter stuff ---
 	clr direction
 
 	// Configure ADMUX to use right analog input and 8-bit mode
@@ -99,12 +102,60 @@ init:
 	// Configure ADSCRA to enable conversion
 	ldi tmp0, 0b10000111
 	sts ADCSRA, tmp0
+	
+	// --- Activate interrupt handling and start timer ---
+	
+	//ldi tmp0, 0b00000010
+	//lds tmp1, TCCR0A
+	//or tmp1, tmp0
+	//sts TCCR0A, tmp1
+	
+	// Configure pre-scaling
+	lds tmp1, TCCR0B
+	ldi tmp0, 0b11111000
+	and tmp1, tmp0
+	ldi tmp0, 0b00000101
+	or tmp1, tmp0
+	sts TCCR0B, tmp1
+
+	// Enable global interrupts
+	sei
+
+	// Activate overflow interrupt for timer0
+	ldi tmp0, 0b00000001
+	lds tmp1, TIMSK0
+	or tmp1, tmp0
+	sts TIMSK0, tmp1
+
+	// --- Below stuff should not be needed TSETSETSETTTSIETU ---
+	// WHY U NO WROK!!!11!one
+	// Zero interrupt flag
+	lds tmp0, TIFR0
+	ldi tmp1, 0b11111110
+	and tmp0, tmp1
+	sts TIFR0, tmp0
+
+	// Set timer dohicky
+	ldi tmp1, 0xf
+	sts OCR0A, tmp1
+	// --- Above stuff should not be needed ---
+
+	// Light up a led
+	ldi arg0, 1
+	ldi arg1, 1
+	call set_bit
+
+	/*lds tmp1, TIMSK0
+	mov arg1, tmp1
+	lds tmp1, TCCR0B
+	mov arg0, tmp1
+	call set_bit*/
 
 main:
 	ldi YH, HIGH(light_rows)
 	ldi YL, LOW(light_rows)
 	// Offset with rows
-	clr tmp0
+	/*clr tmp0
 	ldi tmp1, 1
 	st Y, tmp0
 	add	YL,	tmp1
@@ -121,34 +172,21 @@ main:
 	st Y, tmp0
 	add	YL,	tmp1
 	st Y, tmp0
-	add	YL,	tmp1
+	add	YL,	tmp1*/
 
-	call update_joystick
-	clr arg0
-	bst direction, 0
-	bld arg0, 0
-	add posY, arg0
-	ldi arg0, 0b11111000
-	and arg0, posY
-	sub posY, arg0
-
-	clr arg0
-	bst direction, 1
-	bld arg0, 0
-	add posX, arg0
-	ldi arg0, 0b11111000
-	and arg0, posX
-	sub posX, arg0
+	
+	/*call update_joystick
 
 	and arg0, zero
 	and arg1, zero
 	or arg0, posX
 	or arg1, posY
-	call set_bit
+	call set_bit*/
 // --- Display code ---
 	
 // --- Row to output is put in tmp2 ---
 	//ldi	tmp2, 0b00011100
+draw:
 	clr tmp2
 	ldi XH, HIGH(light_rows)
 	ldi XL, LOW(light_rows)
@@ -309,9 +347,30 @@ render_loop2:
 	nop
 	nop
 	out PORTD, zero
-	
+
+jmp draw
 
 
+on_timer_interrupt:
+	/*clr arg0
+	bst direction, 0
+	bld arg0, 0
+	add posY, arg0
+	ldi arg0, 0b11111000
+	and arg0, posY
+	sub posY, arg0
+
+	clr arg0
+	bst direction, 1
+	bld arg0, 0
+	add posX, arg0
+	ldi arg0, 0b11111000
+	and arg0, posX
+	sub posX, arg0*/
+
+	ldi arg0, 4
+	ldi arg1, 4
+	call set_bit_at
 jmp main
 
 

@@ -22,18 +22,20 @@
  </OUTPUT_FILES>
  <LABELS>
   <light_rows><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>23</LINE></light_rows>
-  <init><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>29</LINE></init>
-  <main><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>103</LINE></main>
-  <update_joystick><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>349</LINE></update_joystick>
-  <set_bit><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>321</LINE></set_bit>
-  <render_loop1><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>159</LINE></render_loop1>
-  <render_loop2><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>229</LINE></render_loop2>
-  <set_bit_at><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>320</LINE></set_bit_at>
-  <loop_start_shifty><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>335</LINE></loop_start_shifty>
-  <out_of_loop><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>341</LINE></out_of_loop>
-  <update_joystick_wait_Y><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>366</LINE></update_joystick_wait_Y>
-  <update_joystick_is_down><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>383</LINE></update_joystick_is_down>
-  <update_joystick_is_up><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>391</LINE></update_joystick_is_up>
-  <update_joystick_Y_done><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>398</LINE></update_joystick_Y_done>
+  <on_timer_interrupt><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>350</LINE></on_timer_interrupt>
+  <init><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>31</LINE></init>
+  <set_bit><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>376</LINE></set_bit>
+  <main><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>150</LINE></main>
+  <draw><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>185</LINE></draw>
+  <render_loop1><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>193</LINE></render_loop1>
+  <render_loop2><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>263</LINE></render_loop2>
+  <set_bit_at><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>375</LINE></set_bit_at>
+  <loop_start_shifty><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>390</LINE></loop_start_shifty>
+  <out_of_loop><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>396</LINE></out_of_loop>
+  <update_joystick><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>404</LINE></update_joystick>
+  <update_joystick_wait_Y><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>421</LINE></update_joystick_wait_Y>
+  <update_joystick_is_down><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>438</LINE></update_joystick_is_down>
+  <update_joystick_is_up><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>446</LINE></update_joystick_is_up>
+  <update_joystick_Y_done><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>453</LINE></update_joystick_Y_done>
  </LABELS>
 </ASSEMBLER_INFO>

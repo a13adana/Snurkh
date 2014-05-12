@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.52  \\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm Mon May 12 11:31:54 2014
+AVRASM ver. 2.1.52  \\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm Mon May 12 14:47:14 2014
 
 
 EQU  SIGNATURE_000 0000001e
@@ -706,16 +706,18 @@ DEF  posX         r25
 DEF  posY         r15
 DEF  zero         r0
 DSEG light_rows   00000100
+CSEG on_timer_interrupt 000000f4
 CSEG init         00000034
-CSEG main         0000005c
-CSEG update_joystick 0000010f
-CSEG set_bit      00000100
-CSEG render_loop1 0000008a
-CSEG render_loop2 000000bc
-CSEG set_bit_at   00000100
-CSEG loop_start_shifty 00000106
-CSEG out_of_loop  0000010c
-CSEG update_joystick_wait_Y 0000011d
-CSEG update_joystick_is_down 0000012b
-CSEG update_joystick_is_up 00000132
-CSEG update_joystick_Y_done 00000139
+CSEG set_bit      000000fa
+CSEG main         00000078
+CSEG draw         0000007a
+CSEG render_loop1 0000007e
+CSEG render_loop2 000000b0
+CSEG set_bit_at   000000fa
+CSEG loop_start_shifty 00000100
+CSEG out_of_loop  00000106
+CSEG update_joystick 00000109
+CSEG update_joystick_wait_Y 00000117
+CSEG update_joystick_is_down 00000125
+CSEG update_joystick_is_up 0000012c
+CSEG update_joystick_Y_done 00000133
