@@ -14,6 +14,9 @@
 .DEF arg1				= r21
 .DEF arg2				= r22
 .DEF direction			= r23
+.DEF posX				= r25
+.DEF posY				= r15
+
 .DEF zero				= r0
 
 .DSEG
@@ -54,7 +57,7 @@ init:
 	ldi	tmp2, 0b00000000
 	st	X+, tmp2
 
-	ldi arg0, 0
+	/*ldi arg0, 0
 	ldi arg1, 0
 	call set_bit_at
 
@@ -70,6 +73,7 @@ init:
 	ldi arg1, 7
 	call set_bit_at
 
+	*/
 
 	// --- Set DDR registers to output on LEDs and input on everything else ---
 	ldi tmp0 , 0b00111111
@@ -84,7 +88,63 @@ init:
 	out PORTC, tmp0 
 	out PORTD, tmp0 
 
+	// --- Set A/D converter stuff
+	clr direction
+
+	// Configure ADMUX to use right analog input and 8-bit mode
+	ldi tmp0, 0b01100000
+	sts ADMUX, tmp0
+	//sbi ADMUX, 7
+	//sbi ADMUX, 6
+	// Configure ADSCRA to enable conversion
+	ldi tmp0, 0b10000111
+	sts ADCSRA, tmp0
+
 main:
+	ldi YH, HIGH(light_rows)
+	ldi YL, LOW(light_rows)
+	// Offset with rows
+	clr tmp0
+	ldi tmp1, 1
+	st Y, tmp0
+	add	YL,	tmp1
+	st Y, tmp0
+	add	YL,	tmp1
+	st Y, tmp0
+	add	YL,	tmp1
+	st Y, tmp0
+	add	YL,	tmp1
+	st Y, tmp0
+	add	YL,	tmp1
+	st Y, tmp0
+	add	YL,	tmp1
+	st Y, tmp0
+	add	YL,	tmp1
+	st Y, tmp0
+	add	YL,	tmp1
+
+	call update_joystick
+	clr arg0
+	bst direction, 0
+	bld arg0, 0
+	add posY, arg0
+	ldi arg0, 0b11111000
+	and arg0, posY
+	sub posY, arg0
+
+	clr arg0
+	bst direction, 1
+	bld arg0, 0
+	add posX, arg0
+	ldi arg0, 0b11111000
+	and arg0, posX
+	sub posX, arg0
+
+	and arg0, zero
+	and arg1, zero
+	or arg0, posX
+	or arg1, posY
+	call set_bit
 // --- Display code ---
 	
 // --- Row to output is put in tmp2 ---
@@ -250,10 +310,13 @@ render_loop2:
 	nop
 	out PORTD, zero
 	
+
+
 jmp main
 
+
+
 // --- Bitflippers ---
-__do_lolStuffOMG12__:
 set_bit_at:
 set_bit: // arg0 = row, arg1 = column
 	// Load base addr
@@ -280,5 +343,64 @@ set_bit: // arg0 = row, arg1 = column
 	// or and store!
 	or tmp0, tmp3
 	st Y, tmp0
+
+	ret
+
+update_joystick: // TODO - Add logic for X-axis
+	// load the current analog settings
+	lds tmp0, ADMUX
+	// wipe the settings of input specs
+	ldi tmp1, 0b11110000
+	and tmp0, tmp1
+	// set the desired input
+	ldi tmp1, 4
+	or tmp0, tmp1
+	sts ADMUX, tmp0
+
+	// Start analog conversion by setting the ADSC bit to 1
+	lds tmp0, ADCSRA
+	ldi tmp1, 0b01000000
+	or tmp0, tmp1
+	sts ADCSRA, tmp0
+
+update_joystick_wait_Y:
+	lds tmp0, ADCSRA
+	ldi tmp1, 0b01000000
+	and tmp0, tmp1
+	cpi	tmp0 , 0 // check if the ADSC bit is 0 (ready)
+	brne update_joystick_wait_Y
+
+
+	lds tmp0, ADCH
+
+	cpi tmp0, 96
+	brlo update_joystick_is_down
+	cpi tmp0, 161
+	brsh update_joystick_is_up
+	// if neutral
+	jmp update_joystick_Y_done
+
+update_joystick_is_down:
+	ldi tmp0, 0b11111100
+	and tmp0, direction
+	ldi tmp1, 0b00000010 // set bit 1 (up) in direction to 1
+	or tmp0, tmp1
+	mov direction, tmp0
+	jmp update_joystick_Y_done
+
+update_joystick_is_up:
+	ldi tmp0, 0b11111100
+	and tmp0, direction
+	ldi tmp1, 0b00000001 // set bit 0 (down) in direction to 1
+	or tmp0, tmp1
+	mov direction, tmp0
+	jmp update_joystick_Y_done
+update_joystick_Y_done:
+	/*in tmp0, PORTC
+	bst tmp0, 5
+	bld tmp1, 0 // X
+	bst tmp0, 4
+	bld tmp1, 1 // Y*/
+
 
 	ret
