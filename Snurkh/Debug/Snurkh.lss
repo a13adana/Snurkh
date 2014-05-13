@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.52  \\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm Mon May 12 14:47:14 2014
+AVRASM ver. 2.1.52  P:\GitHub\Snurkh\Snurkh\Snurkh.asm Tue May 13 18:51:41 2014
 
 [builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.39.1005\avrassembler\Include\m328Pdef.inc'
                  
@@ -999,49 +999,55 @@ AVRASM ver. 2.1.52  \\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da11
                  .DEF direction			= r23
                  .DEF posX				= r25
                  .DEF posY				= r15
+                 .DEF ticks				= r3 // Most significant bit used to determine whether to update
                  
-                 .DEF zero				= r0
+                 .DEF zero				= r0 // Always 0
                  
                  .DSEG
-000100           light_rows:	.BYTE		8
+000100           light_rows:	.BYTE		8 // light matrix
+000108           snurkh_body: .BYTE		64
                  
                  .CSEG
+                 // ----------------------------- Set interrupt jumps -----------------------------
                  .ORG 0x0000
-000000 940c 00f4 	jmp on_timer_interrupt
+000000 940c 0022 	jmp init
                  .ORG 0x0020 // Timer overflow interrupt
-000020 940c 00f4 	jmp on_timer_interrupt
-                 .ORG INT_VECTORS_SIZE
+000020 940c 00fd 	jmp on_timer_interrupt
                  init:
-                 // --- Initialise stack pointer ---
-000034 e008      	ldi tmp0 , HIGH(RAMEND)
-000035 bf0e      	out SPH, tmp0 
-000036 ef0f      	ldi tmp0 , LOW(RAMEND)
-000037 bf0d      	out SPL, tmp0 
-                 	
-                 // --- Set zero register ---
-000038 2400      	clr zero
+                 // ----------------------------- Initialise stack pointer -----------------------------
+000022 e008      	ldi tmp0 , HIGH(RAMEND)
+000023 bf0e      	out SPH, tmp0 
+000024 ef0f      	ldi tmp0 , LOW(RAMEND)
+000025 bf0d      	out SPL, tmp0 
                  
-                 // --- Set data in light matrix ---
-000039 e0b1      	ldi XH, HIGH(light_rows)
-00003a e0a0      	ldi XL, LOW(light_rows)
+000026 e090      	ldi posX, 0
+000027 20f0      	and posY, zero
+000028 2030      	and ticks, zero
+                 // ----------------------------- Set zero register -----------------------------
+000029 2400      	clr zero
                  
-00003b e020      	ldi tmp2, 0b00000000
-00003c 932d      	st	X+, tmp2
-00003d e020      	ldi	tmp2, 0b00000000
-00003e 932d      	st	X+, tmp2
-00003f e020      	ldi	tmp2, 0b00000000
-000040 932d      	st	X+, tmp2
-000041 e020      	ldi	tmp2, 0b00000000
-000042 932d      	st	X+, tmp2
-000043 e020      	ldi	tmp2, 0b00000000
-000044 932d      	st	X+, tmp2
-000045 e020      	ldi	tmp2, 0b00000000
-000046 932d      	st	X+, tmp2
-000047 e020      	ldi	tmp2, 0b00000000
-000048 932d      	st	X+, tmp2
-000049 e020      	ldi	tmp2, 0b00000000
-00004a 932d      	st	X+, tmp2
+                 // ----------------------------- Zero data in light matrix -----------------------------
+00002a e0b1      	ldi XH, HIGH(light_rows)
+00002b e0a0      	ldi XL, LOW(light_rows)
                  
+00002c e020      	ldi tmp2, 0b00000000
+00002d 932d      	st	X+, tmp2
+00002e e020      	ldi	tmp2, 0b00000000
+00002f 932d      	st	X+, tmp2
+000030 e020      	ldi	tmp2, 0b00000000
+000031 932d      	st	X+, tmp2
+000032 e020      	ldi	tmp2, 0b00000000
+000033 932d      	st	X+, tmp2
+000034 e020      	ldi	tmp2, 0b00000000
+000035 932d      	st	X+, tmp2
+000036 e020      	ldi	tmp2, 0b00000000
+000037 932d      	st	X+, tmp2
+000038 e020      	ldi	tmp2, 0b00000000
+000039 932d      	st	X+, tmp2
+00003a e020      	ldi	tmp2, 0b00000000
+00003b 932d      	st	X+, tmp2
+                 
+                 	// Code to light up corners
                  	/*ldi arg0, 0
                  	ldi arg1, 0
                  	call set_bit_at
@@ -1058,149 +1064,136 @@ AVRASM ver. 2.1.52  \\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da11
                  	ldi arg1, 7
                  	call set_bit_at*/
                  
-                 	
+                 // ----------------------------- Zero out snurkh_body memory -----------------------------
+00003c e0b1      	ldi XH, HIGH(snurkh_body)
+00003d e0a8      	ldi XL, LOW(snurkh_body)
                  
-                 	// --- Set DDR registers to output on LEDs and input on everything else ---
-00004b e30f      	ldi tmp0 , 0b00111111
-00004c b904      	out DDRB, tmp0 
-00004d e00f      	ldi tmp0 , 0b00001111
-00004e b907      	out DDRC, tmp0 
-00004f ef0c      	ldi tmp0 , 0b11111100
-000050 b90a      	out DDRD, tmp0 
+00003e e000      	ldi tmp0, 0b00000000
+00003f e410      	ldi tmp1, 64
                  
-000051 e000      	ldi tmp0 , 0x00
-000052 b905      	out PORTB, tmp0 
-000053 b908      	out PORTC, tmp0 
-000054 b90b      	out PORTD, tmp0 
+                 snurkh_body_zero_loop:
+000040 930d      	st	X+, tmp0
+000041 5011      	subi tmp1, 1
+000042 3010      	cpi tmp1, 0
+000043 f7e4      	brge snurkh_body_zero_loop
                  
-                 	// --- Set A/D converter stuff ---
-000055 2777      	clr direction
+                 // ----------------------------- Create Snurkh head, set start direction -----------------------------
+000044 e0b1      	ldi XH, HIGH(snurkh_body)
+000045 e0a8      	ldi XL, LOW(snurkh_body)
+                 
+000046 e10b      	ldi tmp0, 0b00011011		// 7 unused, 6 follow, 3-5 Ypos, 0-2 Xpos
+000047 930c      	st	X, tmp0
+000048 e071      	ldi direction, 0b00000001	// 0000 Down Up Left Right
+                 
+                 // ------------------- Set DDR registers to output on LEDs and input on everything else -------------------
+000049 e30f      	ldi tmp0 , 0b00111111
+00004a b904      	out DDRB, tmp0 
+00004b e00f      	ldi tmp0 , 0b00001111
+00004c b907      	out DDRC, tmp0 
+00004d ef0c      	ldi tmp0 , 0b11111100
+00004e b90a      	out DDRD, tmp0 
+                 
+00004f e000      	ldi tmp0 , 0x00
+000050 b905      	out PORTB, tmp0 
+000051 b908      	out PORTC, tmp0 
+000052 b90b      	out PORTD, tmp0 
+                 
+                 // ----------------------------- Set A/D converter stuff -----------------------------
                  
                  	// Configure ADMUX to use right analog input and 8-bit mode
-000056 e600      	ldi tmp0, 0b01100000
-000057 9300 007c 	sts ADMUX, tmp0
+000053 e600      	ldi tmp0, 0b01100000
+000054 9300 007c 	sts ADMUX, tmp0
                  	//sbi ADMUX, 7
                  	//sbi ADMUX, 6
                  	// Configure ADSCRA to enable conversion
-000059 e807      	ldi tmp0, 0b10000111
-00005a 9300 007a 	sts ADCSRA, tmp0
+000056 e807      	ldi tmp0, 0b10000111
+000057 9300 007a 	sts ADCSRA, tmp0
                  	
-                 	// --- Activate interrupt handling and start timer ---
-                 	
-                 	//ldi tmp0, 0b00000010
-                 	//lds tmp1, TCCR0A
-                 	//or tmp1, tmp0
-                 	//sts TCCR0A, tmp1
+                 // ----------------------------- Activate interrupt handling and start timer -----------------------------
                  	
                  	// Configure pre-scaling
-00005c 9110 0025 	lds tmp1, TCCR0B
-00005e ef08      	ldi tmp0, 0b11111000
-00005f 2310      	and tmp1, tmp0
-000060 e005      	ldi tmp0, 0b00000101
-000061 2b10      	or tmp1, tmp0
-000062 9310 0025 	sts TCCR0B, tmp1
+000059 9110 0025 	lds tmp1, TCCR0B
+00005b ef08      	ldi tmp0, 0b11111000
+00005c 2310      	and tmp1, tmp0
+00005d e005      	ldi tmp0, 0b00000101
+00005e 2b10      	or tmp1, tmp0
+00005f bd15      	out TCCR0B, tmp1
                  
                  	// Enable global interrupts
-000064 9478      	sei
+000060 9478      	sei
                  
                  	// Activate overflow interrupt for timer0
-000065 e001      	ldi tmp0, 0b00000001
-000066 9110 006e 	lds tmp1, TIMSK0
-000068 2b10      	or tmp1, tmp0
-000069 9310 006e 	sts TIMSK0, tmp1
+000061 e001      	ldi tmp0, 0b00000001
+000062 9110 006e 	lds tmp1, TIMSK0
+000064 2b10      	or tmp1, tmp0
+000065 9310 006e 	sts TIMSK0, tmp1
                  
-                 	// Zero interrupt flag
-00006b 9100 0015 	lds tmp0, TIFR0
-00006d ef1e      	ldi tmp1, 0b11111110
-00006e 2301      	and tmp0, tmp1
-00006f 9300 0015 	sts TIFR0, tmp0
-                 
-                 	// Set timer dohicky
-000071 e01f      	ldi tmp1, 0xf
-000072 9310 0027 	sts OCR0A, tmp1
-                 
-                 	// Light up a led
-000074 e041      	ldi arg0, 1
-000075 e051      	ldi arg1, 1
-000076 940e 00fa 	call set_bit
-                 
-                 	/*lds tmp1, TIMSK0
-                 	mov arg1, tmp1
-                 	lds tmp1, TCCR0B
-                 	mov arg0, tmp1
-                 	call set_bit*/
-                 
+                 // ----------------------------- Main loop -----------------------------
                  main:
-000078 e0d1      	ldi YH, HIGH(light_rows)
-000079 e0c0      	ldi YL, LOW(light_rows)
-                 	// Offset with rows
-                 	/*clr tmp0
-                 	ldi tmp1, 1
-                 	st Y, tmp0
-                 	add	YL,	tmp1
-                 	st Y, tmp0
-                 	add	YL,	tmp1
-                 	st Y, tmp0
-                 	add	YL,	tmp1
-                 	st Y, tmp0
-                 	add	YL,	tmp1
-                 	st Y, tmp0
-                 	add	YL,	tmp1
-                 	st Y, tmp0
-                 	add	YL,	tmp1
-                 	st Y, tmp0
-                 	add	YL,	tmp1
-                 	st Y, tmp0
-                 	add	YL,	tmp1*/
+000067 2433      	clr ticks // Zero out ticks before it is used.
                  
-                 	
-                 	/*call update_joystick
+                 // Clear matrix
+000068 e0d1      	ldi YH, HIGH(light_rows)
+000069 e0c0      	ldi YL, LOW(light_rows)
+00006a 2700      	clr tmp0
+00006b e011      	ldi tmp1, 1
+00006c 8308      	st Y, tmp0
+00006d 0fc1      	add	YL,	tmp1
+00006e 8308      	st Y, tmp0
+00006f 0fc1      	add	YL,	tmp1
+000070 8308      	st Y, tmp0
+000071 0fc1      	add	YL,	tmp1
+000072 8308      	st Y, tmp0
+000073 0fc1      	add	YL,	tmp1
+000074 8308      	st Y, tmp0
+000075 0fc1      	add	YL,	tmp1
+000076 8308      	st Y, tmp0
+000077 0fc1      	add	YL,	tmp1
+000078 8308      	st Y, tmp0
+000079 0fc1      	add	YL,	tmp1
+00007a 8308      	st Y, tmp0
+00007b 0fc1      	add	YL,	tmp1
                  
-                 	and arg0, zero
-                 	and arg1, zero
-                 	or arg0, posX
-                 	or arg1, posY
+00007c 940e 0115 	call update_joystick // TODO: insert code here
+                 	// spawn food
+00007e 940e 015e 	call update_snurkh // TODO: insert code here
+                 
+                 	/*subi posX, -1
+                 	clr arg1
+                 	or arg1, posX
+                 	ldi arg0, 0
                  	call set_bit*/
-                 // --- Display code ---
-                 	
-                 // --- Row to output is put in tmp2 ---
-                 	//ldi	tmp2, 0b00011100
-                 draw:
-00007a 2722      	clr tmp2
-00007b e0b1      	ldi XH, HIGH(light_rows)
-00007c e0a0      	ldi XL, LOW(light_rows)
-                 	
+                 
+                 // ----------------------------- Display code -----------------------------
+                 draw:	
+000080 2722      	clr tmp2
+000081 e0b1      	ldi XH, HIGH(light_rows)
+000082 e0a0      	ldi XL, LOW(light_rows)
                  	
                  // --- Iterate over first four rows ---
-00007d e001      	ldi	tmp0 , 0b00000001 // first row, port C
+000083 e001      	ldi	tmp0 , 0b00000001 // first row, port C
                  render_loop1:
                  	
-00007e 912d      	ld tmp2, X+
+000084 912d      	ld tmp2, X+
                  	// set column(s) to "render"
                  	// tmp2 contains the row to render in "raw form"
                  	// tmp1 is output
                  	
                  // --- Set proper bits for columns ---
                  	// --- Set the D port ---
-00007f 2711      	clr	tmp1 // clear register used for output
-000080 fb20      	bst	tmp2, 0 // copy bit 0
-000081 f916      	bld	tmp1, 6 // paste to bit 6
-000082 fb21      	bst	tmp2, 1 // copy bit 1
-000083 f917      	bld	tmp1, 7 // paste to bit 7
+000085 2711      	clr	tmp1 // clear register used for output
+000086 fb20      	bst	tmp2, 0 // copy bit 0
+000087 f916      	bld	tmp1, 6 // paste to bit 6
+000088 fb21      	bst	tmp2, 1 // copy bit 1
+000089 f917      	bld	tmp1, 7 // paste to bit 7
                  	
                  	// --- Set the B port ---
-000084 2f32      	mov	tmp3,  tmp2 // tmp3 = tmp2
-000085 9536      	lsr tmp3 // shift right
-000086 9536      	lsr tmp3 // shift right
+00008a 2f32      	mov	tmp3,  tmp2 // tmp3 = tmp2
+00008b 9536      	lsr tmp3 // shift right
+00008c 9536      	lsr tmp3 // shift right
                  
-000087 b808      	out PORTC, zero
+00008d b808      	out PORTC, zero
                  	// NOPS
-000088 0000      	nop
-000089 0000      	nop
-00008a 0000      	nop
-00008b 0000      	nop
-00008c 0000      	nop
-00008d 0000      	nop
 00008e 0000      	nop
 00008f 0000      	nop
 000090 0000      	nop
@@ -1209,13 +1202,13 @@ AVRASM ver. 2.1.52  \\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da11
 000093 0000      	nop
 000094 0000      	nop
 000095 0000      	nop
-                 	// LOL MOAR NOPS
 000096 0000      	nop
 000097 0000      	nop
 000098 0000      	nop
 000099 0000      	nop
 00009a 0000      	nop
 00009b 0000      	nop
+                 	// LOL MOAR NOPS
 00009c 0000      	nop
 00009d 0000      	nop
 00009e 0000      	nop
@@ -1229,51 +1222,51 @@ AVRASM ver. 2.1.52  \\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da11
 0000a6 0000      	nop
 0000a7 0000      	nop
 0000a8 0000      	nop
-0000a9 b935      	out PORTB, tmp3
-0000aa b91b      	out PORTD, tmp1
-0000ab b908      	out PORTC, tmp0 
+0000a9 0000      	nop
+0000aa 0000      	nop
+0000ab 0000      	nop
+0000ac 0000      	nop
+0000ad 0000      	nop
+0000ae 0000      	nop
+0000af b935      	out PORTB, tmp3
+0000b0 b91b      	out PORTD, tmp1
+0000b1 b908      	out PORTC, tmp0 
                  
-0000ac 0f00      	lsl	tmp0 // shift left
-0000ad 3100      	cpi	tmp0 , 0b00010000 // check if we have passed the first four rows
-0000ae f278      	brlo render_loop1 // iterate over first four rows
+0000b2 0f00      	lsl	tmp0 // shift left
+0000b3 3100      	cpi	tmp0 , 0b00010000 // check if we have passed the first four rows
+0000b4 f278      	brlo render_loop1 // iterate over first four rows
                  
                  	// we'll get here after the first four rows
                  	
                  	 // we are done with port C
                  // --- Iterate over last for rows ----
-0000af e004      	ldi	tmp0 , 0b00000100 // fifth row, port D
+0000b5 e004      	ldi	tmp0 , 0b00000100 // fifth row, port D
                  
                  render_loop2:
                  	// set column(s) to "render"
                  	// tmp2 contains the row to render in "raw form"
                  	// tmp1 is output
                  
-0000b0 912d      	ld tmp2, X+
+0000b6 912d      	ld tmp2, X+
                  // --- Set proper bits for columns ---
                  	// --- Set the D port ---
                  	// copy iteration reg into output reg so that we don't overwrite the row bits in it
                  	//ld tmp2, X+
-0000b1 2f10      	mov	tmp1, tmp0 
-0000b2 fb20      	bst	tmp2, 0 // copy bit 0
-0000b3 f916      	bld	tmp1, 6 // paste to bit 6
-0000b4 fb21      	bst	tmp2, 1 // copy bit 1
-0000b5 f917      	bld	tmp1, 7 // paste to bit 7
+0000b7 2f10      	mov	tmp1, tmp0 
+0000b8 fb20      	bst	tmp2, 0 // copy bit 0
+0000b9 f916      	bld	tmp1, 6 // paste to bit 6
+0000ba fb21      	bst	tmp2, 1 // copy bit 1
+0000bb f917      	bld	tmp1, 7 // paste to bit 7
                  	
                  	// --- Set the B port ---
-0000b6 2f32      	mov	tmp3,  tmp2 // tmp3 = tmp2
-0000b7 9536      	lsr tmp3 // shift right
-0000b8 9536      	lsr tmp3 // shift right
+0000bc 2f32      	mov	tmp3,  tmp2 // tmp3 = tmp2
+0000bd 9536      	lsr tmp3 // shift right
+0000be 9536      	lsr tmp3 // shift right
                  	
-0000b9 b808      	out PORTC, zero
-0000ba b80b      	out PORTD, zero
+0000bf b808      	out PORTC, zero
+0000c0 b80b      	out PORTD, zero
                  
                  	//NOPS
-0000bb 0000      	nop
-0000bc 0000      	nop
-0000bd 0000      	nop
-0000be 0000      	nop
-0000bf 0000      	nop
-0000c0 0000      	nop
 0000c1 0000      	nop
 0000c2 0000      	nop
 0000c3 0000      	nop
@@ -1301,20 +1294,20 @@ AVRASM ver. 2.1.52  \\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da11
 0000d9 0000      	nop
 0000da 0000      	nop
 0000db 0000      	nop
-                 
-0000dc b935      	out PORTB, tmp3
-0000dd b91b      	out PORTD, tmp1
-                 	
-0000de 0f00      	lsl	tmp0 
-0000df 3400      	cpi	tmp0 , 0b01000000 // check if we have passed the last for rows
-0000e0 f278      	brlo render_loop2 // iterate over last four rows
-                 	// NOPS
+0000dc 0000      	nop
+0000dd 0000      	nop
+0000de 0000      	nop
+0000df 0000      	nop
+0000e0 0000      	nop
 0000e1 0000      	nop
-0000e2 0000      	nop
-0000e3 0000      	nop
-0000e4 0000      	nop
-0000e5 0000      	nop
-0000e6 0000      	nop
+                 
+0000e2 b935      	out PORTB, tmp3
+0000e3 b91b      	out PORTD, tmp1
+                 	
+0000e4 0f00      	lsl	tmp0 
+0000e5 3400      	cpi	tmp0 , 0b01000000 // check if we have passed the last for rows
+0000e6 f278      	brlo render_loop2 // iterate over last four rows
+                 	// NOPS
 0000e7 0000      	nop
 0000e8 0000      	nop
 0000e9 0000      	nop
@@ -1325,121 +1318,231 @@ AVRASM ver. 2.1.52  \\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da11
 0000ee 0000      	nop
 0000ef 0000      	nop
 0000f0 0000      	nop
-0000f1 b80b      	out PORTD, zero
+0000f1 0000      	nop
+0000f2 0000      	nop
+0000f3 0000      	nop
+0000f4 0000      	nop
+0000f5 0000      	nop
+0000f6 0000      	nop
+0000f7 b80b      	out PORTD, zero
+0000f8 fc37      	sbrc ticks, 7 // Check if we should stop draw loop
+0000f9 940c 0067 jmp main
+0000fb 940c 0080 jmp draw // Draw until interrupt from timer
                  
-0000f2 940c 007a jmp draw
-                 
-                 
+                 // ----------------------------- Timer interrupt code -----------------------------
                  on_timer_interrupt:
-                 	/*clr arg0
-                 	bst direction, 0
-                 	bld arg0, 0
-                 	add posY, arg0
-                 	ldi arg0, 0b11111000
-                 	and arg0, posY
-                 	sub posY, arg0
+0000fd 930f      	push tmp0
+0000fe 9433      	inc ticks
+0000ff e10e      	ldi tmp0, 30 // ticks/update
+000100 1630      	cp ticks, tmp0
+000101 f010      	brlo on_timer_interrupt_end
+                 // Set update flag
+000102 e800      	ldi tmp0, 0b10000000
+000103 2a30      	or ticks, tmp0
+                 on_timer_interrupt_end:
+000104 910f      	pop tmp0
+000105 9518      reti
                  
-                 	clr arg0
-                 	bst direction, 1
-                 	bld arg0, 0
-                 	add posX, arg0
-                 	ldi arg0, 0b11111000
-                 	and arg0, posX
-                 	sub posX, arg0*/
-                 
-0000f4 e044      	ldi arg0, 4
-0000f5 e054      	ldi arg1, 4
-0000f6 940e 00fa 	call set_bit_at
-0000f8 940c 0078 jmp main
-                 
-                 
-                 
-                 // --- Bitflippers ---
+                 // ----------------------------- Set bit specified by arguments -----------------------------
                  set_bit_at:
                  set_bit: // arg0 = row, arg1 = column
                  	// Load base addr
-0000fa e0d1      	ldi YH, HIGH(light_rows)
-0000fb e0c0      	ldi YL, LOW(light_rows)
+000106 e0d1      	ldi YH, HIGH(light_rows)
+000107 e0c0      	ldi YL, LOW(light_rows)
                  	// Offset with rows
                  	// Fuck overflow 4 lyfe #YOLO_SWAG
-0000fc 0fc4      	add	YL,	arg0
+000108 0fc4      	add	YL,	arg0
                  	// Load byte
-0000fd 8108      	ld tmp0, Y
+000109 8108      	ld tmp0, Y
                  
-0000fe e080      	ldi tmp4, 0 // counter
-0000ff e031      	ldi tmp3, 1 // bitmask
+00010a e080      	ldi tmp4, 0 // counter
+00010b e031      	ldi tmp3, 1 // bitmask
                  
                  	// Shifts the bit until right
                  	loop_start_shifty:
-000100 1785      	cp tmp4, arg1
-000101 f424      	brge out_of_loop
-000102 0f33      	lsl tmp3
-000103 9601      	adiw tmp4, 1
-000104 940c 0100 	jmp loop_start_shifty
+00010c 1785      	cp tmp4, arg1
+00010d f424      	brge out_of_loop
+00010e 0f33      	lsl tmp3
+00010f 9601      	adiw tmp4, 1
+000110 940c 010c 	jmp loop_start_shifty
                  	out_of_loop:
                  	
                  	// or and store!
-000106 2b03      	or tmp0, tmp3
-000107 8308      	st Y, tmp0
+000112 2b03      	or tmp0, tmp3
+000113 8308      	st Y, tmp0
+000114 9508      ret
                  
-000108 9508      	ret
+                 // ----------------------------- Update direction register using joystick -----------------------------
+                 update_joystick:
+                 // --- Setting up for reading of Y ---
+                 // load the current analog settings
+000115 9100 007c 	lds tmp0, ADMUX
+                 // wipe the settings of input specs
+000117 ef10      	ldi tmp1, 0b11110000
+000118 2301      	and tmp0, tmp1
+                 // set the desired input
+000119 e015      	ldi tmp1, 5
+00011a 2b01      	or tmp0, tmp1
+00011b 9300 007c 	sts ADMUX, tmp0
                  
-                 update_joystick: // TODO - Add logic for X-axis
-                 	// load the current analog settings
-000109 9100 007c 	lds tmp0, ADMUX
-                 	// wipe the settings of input specs
-00010b ef10      	ldi tmp1, 0b11110000
-00010c 2301      	and tmp0, tmp1
-                 	// set the desired input
-00010d e014      	ldi tmp1, 4
-00010e 2b01      	or tmp0, tmp1
-00010f 9300 007c 	sts ADMUX, tmp0
+                 // Start analog conversion by setting the ADSC bit to 1
+00011d 9100 007a 	lds tmp0, ADCSRA
+00011f e410      	ldi tmp1, 0b01000000
+000120 2b01      	or tmp0, tmp1
+000121 9300 007a 	sts ADCSRA, tmp0
                  
-                 	// Start analog conversion by setting the ADSC bit to 1
-000111 9100 007a 	lds tmp0, ADCSRA
-000113 e410      	ldi tmp1, 0b01000000
-000114 2b01      	or tmp0, tmp1
-000115 9300 007a 	sts ADCSRA, tmp0
-                 
+                 // --- Read Y ---
                  update_joystick_wait_Y:
-000117 9100 007a 	lds tmp0, ADCSRA
-000119 e410      	ldi tmp1, 0b01000000
-00011a 2301      	and tmp0, tmp1
-00011b 3000      	cpi	tmp0 , 0 // check if the ADSC bit is 0 (ready)
-00011c f7d1      	brne update_joystick_wait_Y
+000123 9100 007a 	lds tmp0, ADCSRA
+000125 e410      	ldi tmp1, 0b01000000
+000126 2301      	and tmp0, tmp1
+000127 3000      	cpi	tmp0 , 0 // check if the ADSC bit is 0 (ready)
+000128 f7d1      brne update_joystick_wait_Y
                  
+000129 9100 0079 	lds tmp0, ADCH
                  
-00011d 9100 0079 	lds tmp0, ADCH
-                 
-00011f 3600      	cpi tmp0, 96
-000120 f020      	brlo update_joystick_is_down
-000121 3a01      	cpi tmp0, 161
-000122 f448      	brsh update_joystick_is_up
-                 	// if neutral
-000123 940c 0133 	jmp update_joystick_Y_done
+00012b 3600      	cpi tmp0, 96
+00012c f020      brlo update_joystick_is_down
+00012d 3a01      	cpi tmp0, 161
+00012e f428      brsh update_joystick_is_up
+                 // if neutral
+00012f 940c 0137 jmp update_joystick_X
                  
                  update_joystick_is_down:
-000125 ef0c      	ldi tmp0, 0b11111100
-000126 2307      	and tmp0, direction
-000127 e012      	ldi tmp1, 0b00000010 // set bit 1 (up) in direction to 1
-000128 2b01      	or tmp0, tmp1
-000129 2f70      	mov direction, tmp0
-00012a 940c 0133 	jmp update_joystick_Y_done
+000131 e028      	ldi tmp2, 0b00001000
+000132 940c 0159 jmp update_joystick_direction
                  
                  update_joystick_is_up:
-00012c ef0c      	ldi tmp0, 0b11111100
-00012d 2307      	and tmp0, direction
-00012e e011      	ldi tmp1, 0b00000001 // set bit 0 (down) in direction to 1
-00012f 2b01      	or tmp0, tmp1
-000130 2f70      	mov direction, tmp0
-000131 940c 0133 	jmp update_joystick_Y_done
-                 update_joystick_Y_done:
-                 	/*in tmp0, PORTC
-                 	bst tmp0, 5
-                 	bld tmp1, 0 // X
-                 	bst tmp0, 4
-                 	bld tmp1, 1 // Y*/
+000134 e024      	ldi tmp2, 0b00000100
+000135 940c 0159 jmp update_joystick_direction
                  
+                 update_joystick_X:
+                 // --- Setting up for reading of X ---
+                 // load the current analog settings
+000137 9100 007c 	lds tmp0, ADMUX
+                 // wipe the settings of input specs
+000139 ef10      	ldi tmp1, 0b11110000
+00013a 2301      	and tmp0, tmp1
+                 // set the desired input
+00013b e014      	ldi tmp1, 4
+00013c 2b01      	or tmp0, tmp1
+00013d 9300 007c 	sts ADMUX, tmp0
+                 
+                 // Start analog conversion by setting the ADSC bit to 1
+00013f 9100 007a 	lds tmp0, ADCSRA
+000141 e410      	ldi tmp1, 0b01000000
+000142 2b01      	or tmp0, tmp1
+000143 9300 007a 	sts ADCSRA, tmp0
+                 // --- Read X ---
+                 update_joystick_wait_X:
+000145 9100 007a 	lds tmp0, ADCSRA
+000147 e410      	ldi tmp1, 0b01000000
+000148 2301      	and tmp0, tmp1
+000149 3000      	cpi	tmp0 , 0 // check if the ADSC bit is 0 (ready)
+00014a f7d1      brne update_joystick_wait_X
+                 
+00014b 9100 0079 	lds tmp0, ADCH
+                 
+00014d 3600      	cpi tmp0, 96
+00014e f020      	brlo update_joystick_is_right
+00014f 3a01      	cpi tmp0, 161
+000150 f428      	brsh update_joystick_is_left
+                 // we only get here is both directions are neutral
+000151 940c 015d jmp dont_update_joystick_direction
+                 
+                 update_joystick_is_right:
+000153 e021      	ldi tmp2, 0b00000001
+000154 940c 0159 jmp update_joystick_direction
+                 
+                 update_joystick_is_left:
+000156 e022      	ldi tmp2, 0b00000010
+000157 940c 0159 jmp update_joystick_direction
+                 
+                 update_joystick_direction:
+                 // Update direction using tmp2 which is set by joystick code
+000159 ef00      	ldi tmp0, 0b11110000
+00015a 2307      	and tmp0, direction // mask out relevant bits
+00015b 2b02      	or tmp0, tmp2 // or in direction bits
+00015c 2f70      	mov direction, tmp0
+                 
+                 dont_update_joystick_direction:
+00015d 9508      ret
+                 
+                 // ----------------------------- Move and store snurkh -----------------------------
+                 update_snurkh:
+                 // Get head position
+00015e e0b1      	ldi XH, HIGH(snurkh_body)
+00015f e0a8      	ldi XL, LOW(snurkh_body)
+                 
+000160 910c      	ld tmp0, X // Store head position in tmp0
+                 
+000161 e017      	ldi tmp1, 0b00000111 // mask for x
+000162 2310      	and tmp1, tmp0 // get x value
+                 
+000163 e328      	ldi tmp2, 0b00111000 // mask for y
+000164 2320      	and tmp2, tmp0 // get y value
+000165 9526      	lsr tmp2 // right align y bits
+000166 9526      	lsr tmp2
+000167 9526      	lsr tmp2
+                 
+                 
+000168 ff70      	sbrs direction, 0 // skip next if right = 1
+000169 940c 016e jmp dont_snurkh_right
+00016b 5f1f      	subi tmp1, -1
+                 
+00016c fd13      	sbrc tmp1, 3
+00016d 5018      	subi tmp1, 8
+                 dont_snurkh_right:
+                 
+00016e ff71      	sbrs direction, 1 // skip next if left = 1
+00016f 940c 0175 jmp dont_snurkh_left
+                 // if we are at 0 then set to 8 to wrap around
+000171 1110      	cpse tmp1, zero // skip next skip if tmp1 = 0
+000172 1000      	cpse zero, zero // always skip
+000173 e018      	ldi tmp1, 8
+                 
+000174 5011      	subi tmp1, 1
+                 dont_snurkh_left:
+                 
+000175 ff72      	sbrs direction, 2 // skip next if up = 1
+000176 940c 017c jmp dont_snurkh_up
+                 // if we are at 0 then set to 8 to wrap around
+000178 1120      	cpse tmp2, zero
+000179 1000      	cpse zero, zero
+00017a e028      	ldi tmp2, 8
+                 
+00017b 5021      	subi tmp2, 1
+                 dont_snurkh_up:
+                 
+00017c ff73      	sbrs direction, 3 // skip next if down = 1
+00017d 940c 0182 jmp dont_snurkh_down
+00017f 5f2f      	subi tmp2, -1
+                 
+000180 fd23      	sbrc tmp2, 3
+000181 5028      	subi tmp2, 8
+                 dont_snurkh_down:
+                 
+                 // Write snurkh head to light matrix
+000182 2744      	clr arg0
+000183 2b41      	or arg0, tmp1
+000184 2755      	clr arg1
+000185 2b52      	or arg1, tmp2
+000186 940e 0106 	call set_bit
+                 
+                 // Write snurkh head to memory
+000188 0f22      	lsl tmp2 // alight y pos properly
+000189 0f22      	lsl tmp2
+00018a 0f22      	lsl tmp2
+00018b 2b21      	or tmp2, tmp1 // or together the positions
+00018c 932c      	st X, tmp2 // store in head position
+                 
+                 // calc target pos
+                 // check for food at pos
+                 update_snurkh_loop:
+                 // fetch cur pos
+                 // stor tar pos
+                 // if end of snake && hasfood -> addpart
+                 // if not end of snake -> loop
                  
 
 
@@ -1458,40 +1561,40 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 "ATmega328P" register use summary:
-r0 :   5 r1 :   0 r2 :   0 r3 :   0 r4 :   0 r5 :   0 r6 :   0 r7 :   0 
-r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 r13:   0 r14:   0 r15:   0 
-r16:  59 r17:  31 r18:  25 r19:  11 r20:   3 r21:   3 r22:   0 r23:   5 
-r24:   3 r25:   0 r26:   2 r27:   2 r28:   3 r29:   2 r30:   0 r31:   0 
-x  :  10 y  :   2 z  :   0 
-Registers used: 15 out of 35 (42.9%)
+r0 :  13 r1 :   0 r2 :   0 r3 :   6 r4 :   0 r5 :   0 r6 :   0 r7 :   0 
+r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 r13:   0 r14:   0 r15:   1 
+r16:  87 r17:  53 r18:  47 r19:  11 r20:   3 r21:   3 r22:   0 r23:   7 
+r24:   3 r25:   1 r26:   5 r27:   5 r28:  11 r29:   2 r30:   0 r31:   0 
+x  :  14 y  :  10 z  :   0 
+Registers used: 18 out of 35 (51.4%)
 
 "ATmega328P" instruction use summary:
-.lds  :   0 .sts  :   0 adc   :   0 add   :   1 adiw  :   1 and   :   6 
+.lds  :   0 .sts  :   0 adc   :   0 add   :   9 adiw  :   1 and   :  10 
 andi  :   0 asr   :   0 bclr  :   0 bld   :   4 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   1 brhc  :   0 
-brhs  :   0 brid  :   0 brie  :   0 brlo  :   3 brlt  :   0 brmi  :   0 
-brne  :   1 brpl  :   0 brsh  :   1 brtc  :   0 brts  :   0 brvc  :   0 
-brvs  :   0 bset  :   0 bst   :   4 call  :   2 cbi   :   0 cbr   :   0 
-clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   4 cls   :   0 
-clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   1 cpc   :   0 
-cpi   :   5 cpse  :   0 dec   :   0 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   0 jmp   :   8 
-ld    :   3 ldd   :   0 ldi   :  45 lds   :   7 lpm   :   0 lsl   :   3 
-lsr   :   4 mov   :   5 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :  82 or    :   7 ori   :   0 out   :  17 pop   :   0 
-push  :   0 rcall :   0 ret   :   2 reti  :   0 rjmp  :   0 rol   :   0 
+brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   2 brhc  :   0 
+brhs  :   0 brid  :   0 brie  :   0 brlo  :   5 brlt  :   0 brmi  :   0 
+brne  :   2 brpl  :   0 brsh  :   2 brtc  :   0 brts  :   0 brvc  :   0 
+brvs  :   0 bset  :   0 bst   :   4 call  :   3 cbi   :   0 cbr   :   0 
+clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   7 cls   :   0 
+clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   2 cpc   :   0 
+cpi   :   9 cpse  :   4 dec   :   0 eor   :   0 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   1 jmp   :  15 
+ld    :   4 ldd   :   0 ldi   :  62 lds   :  10 lpm   :   0 lsl   :   6 
+lsr   :   7 mov   :   4 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
+neg   :   0 nop   :  82 or    :  12 ori   :   0 out   :  18 pop   :   1 
+push  :   1 rcall :   0 ret   :   3 reti  :   1 rjmp  :   0 rol   :   0 
 ror   :   0 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 sbis  :   0 
-sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 
+sbiw  :   0 sbr   :   0 sbrc  :   3 sbrs  :   4 sec   :   0 seh   :   0 
 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
-sez   :   0 sleep :   0 spm   :   0 st    :   9 std   :   0 sts   :   8 
-sub   :   0 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 27 out of 113 (23.9%)
+sez   :   0 sleep :   0 spm   :   0 st    :  20 std   :   0 sts   :   7 
+sub   :   0 subi  :   7 swap  :   0 tst   :   0 wdr   :   0 
+Instructions used: 35 out of 113 (31.0%)
 
 "ATmega328P" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000268    520      0    520   32768   1.6%
-[.dseg] 0x000100 0x000108      0      8      8    2048   0.4%
+[.cseg] 0x000000 0x00031c    736      0    736   32768   2.2%
+[.dseg] 0x000100 0x000148      0     72     72    2048   3.5%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 
 Assembly complete, 0 errors, 0 warnings

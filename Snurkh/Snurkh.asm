@@ -16,29 +16,34 @@
 .DEF direction			= r23
 .DEF posX				= r25
 .DEF posY				= r15
+.DEF ticks				= r3 // Most significant bit used to determine whether to update
 
-.DEF zero				= r0
+.DEF zero				= r0 // Always 0
 
 .DSEG
-light_rows:	.BYTE		8
+light_rows:	.BYTE		8 // light matrix
+snurkh_body: .BYTE		64
 
 .CSEG
+// ----------------------------- Set interrupt jumps -----------------------------
 .ORG 0x0000
 	jmp init
 .ORG 0x0020 // Timer overflow interrupt
 	jmp on_timer_interrupt
-.ORG INT_VECTORS_SIZE
 init:
-// --- Initialise stack pointer ---
+// ----------------------------- Initialise stack pointer -----------------------------
 	ldi tmp0 , HIGH(RAMEND)
 	out SPH, tmp0 
 	ldi tmp0 , LOW(RAMEND)
 	out SPL, tmp0 
-	
-// --- Set zero register ---
+
+	ldi posX, 0
+	and posY, zero
+	and ticks, zero
+// ----------------------------- Set zero register -----------------------------
 	clr zero
 
-// --- Set data in light matrix ---
+// ----------------------------- Zero data in light matrix -----------------------------
 	ldi XH, HIGH(light_rows)
 	ldi XL, LOW(light_rows)
 
@@ -76,9 +81,28 @@ init:
 	ldi arg1, 7
 	call set_bit_at*/
 
-	
+// ----------------------------- Zero out snurkh_body memory -----------------------------
+	ldi XH, HIGH(snurkh_body)
+	ldi XL, LOW(snurkh_body)
 
-	// --- Set DDR registers to output on LEDs and input on everything else ---
+	ldi tmp0, 0b00000000
+	ldi tmp1, 64
+
+snurkh_body_zero_loop:
+	st	X+, tmp0
+	subi tmp1, 1
+	cpi tmp1, 0
+	brge snurkh_body_zero_loop
+
+// ----------------------------- Create Snurkh head, set start direction -----------------------------
+	ldi XH, HIGH(snurkh_body)
+	ldi XL, LOW(snurkh_body)
+
+	ldi tmp0, 0b00011011		// 7 unused, 6 follow, 3-5 Ypos, 0-2 Xpos
+	st	X, tmp0
+	ldi direction, 0b00000001	// 0000 Down Up Left Right
+
+// ------------------- Set DDR registers to output on LEDs and input on everything else -------------------
 	ldi tmp0 , 0b00111111
 	out DDRB, tmp0 
 	ldi tmp0 , 0b00001111
@@ -91,8 +115,7 @@ init:
 	out PORTC, tmp0 
 	out PORTD, tmp0 
 
-	// --- Set A/D converter stuff ---
-	clr direction
+// ----------------------------- Set A/D converter stuff -----------------------------
 
 	// Configure ADMUX to use right analog input and 8-bit mode
 	ldi tmp0, 0b01100000
@@ -103,12 +126,7 @@ init:
 	ldi tmp0, 0b10000111
 	sts ADCSRA, tmp0
 	
-	// --- Activate interrupt handling and start timer ---
-	
-	//ldi tmp0, 0b00000010
-	//lds tmp1, TCCR0A
-	//or tmp1, tmp0
-	//sts TCCR0A, tmp1
+// ----------------------------- Activate interrupt handling and start timer -----------------------------
 	
 	// Configure pre-scaling
 	lds tmp1, TCCR0B
@@ -116,7 +134,7 @@ init:
 	and tmp1, tmp0
 	ldi tmp0, 0b00000101
 	or tmp1, tmp0
-	sts TCCR0B, tmp1
+	out TCCR0B, tmp1
 
 	// Enable global interrupts
 	sei
@@ -127,35 +145,14 @@ init:
 	or tmp1, tmp0
 	sts TIMSK0, tmp1
 
-	// --- Below stuff should not be needed TSETSETSETTTSIETU ---
-	// WHY U NO WROK!!!11!one
-	// Zero interrupt flag
-	lds tmp0, TIFR0
-	ldi tmp1, 0b11111110
-	and tmp0, tmp1
-	sts TIFR0, tmp0
-
-	// Set timer dohicky
-	ldi tmp1, 0xf
-	sts OCR0A, tmp1
-	// --- Above stuff should not be needed ---
-
-	// Light up a led
-	ldi arg0, 1
-	ldi arg1, 1
-	call set_bit
-
-	/*lds tmp1, TIMSK0
-	mov arg1, tmp1
-	lds tmp1, TCCR0B
-	mov arg0, tmp1
-	call set_bit*/
-
+// ----------------------------- Main loop -----------------------------
 main:
+	clr ticks // Zero out ticks before it is used.
+
+// Clear matrix
 	ldi YH, HIGH(light_rows)
 	ldi YL, LOW(light_rows)
-	// Offset with rows
-	/*clr tmp0
+	clr tmp0
 	ldi tmp1, 1
 	st Y, tmp0
 	add	YL,	tmp1
@@ -172,25 +169,23 @@ main:
 	st Y, tmp0
 	add	YL,	tmp1
 	st Y, tmp0
-	add	YL,	tmp1*/
+	add	YL,	tmp1
 
-	
-	/*call update_joystick
+	call update_joystick // TODO: insert code here
+	// spawn food
+	call update_snurkh // TODO: insert code here
 
-	and arg0, zero
-	and arg1, zero
-	or arg0, posX
-	or arg1, posY
+	/*subi posX, -1
+	clr arg1
+	or arg1, posX
+	ldi arg0, 0
 	call set_bit*/
-// --- Display code ---
-	
-// --- Row to output is put in tmp2 ---
-	//ldi	tmp2, 0b00011100
-draw:
+
+// ----------------------------- Display code -----------------------------
+draw:	
 	clr tmp2
 	ldi XH, HIGH(light_rows)
 	ldi XL, LOW(light_rows)
-	
 	
 // --- Iterate over first four rows ---
 	ldi	tmp0 , 0b00000001 // first row, port C
@@ -347,35 +342,25 @@ render_loop2:
 	nop
 	nop
 	out PORTD, zero
-
-jmp draw
-
-
-on_timer_interrupt:
-	/*clr arg0
-	bst direction, 0
-	bld arg0, 0
-	add posY, arg0
-	ldi arg0, 0b11111000
-	and arg0, posY
-	sub posY, arg0
-
-	clr arg0
-	bst direction, 1
-	bld arg0, 0
-	add posX, arg0
-	ldi arg0, 0b11111000
-	and arg0, posX
-	sub posX, arg0*/
-
-	ldi arg0, 4
-	ldi arg1, 4
-	call set_bit_at
+	sbrc ticks, 7 // Check if we should stop draw loop
 jmp main
+jmp draw // Draw until interrupt from timer
 
+// ----------------------------- Timer interrupt code -----------------------------
+on_timer_interrupt:
+	push tmp0
+	inc ticks
+	ldi tmp0, 30 // ticks/update
+	cp ticks, tmp0
+	brlo on_timer_interrupt_end
+// Set update flag
+	ldi tmp0, 0b10000000
+	or ticks, tmp0
+on_timer_interrupt_end:
+	pop tmp0
+reti
 
-
-// --- Bitflippers ---
+// ----------------------------- Set bit specified by arguments -----------------------------
 set_bit_at:
 set_bit: // arg0 = row, arg1 = column
 	// Load base addr
@@ -402,64 +387,178 @@ set_bit: // arg0 = row, arg1 = column
 	// or and store!
 	or tmp0, tmp3
 	st Y, tmp0
+ret
 
-	ret
-
-update_joystick: // TODO - Add logic for X-axis
-	// load the current analog settings
+// ----------------------------- Update direction register using joystick -----------------------------
+update_joystick:
+// --- Setting up for reading of Y ---
+// load the current analog settings
 	lds tmp0, ADMUX
-	// wipe the settings of input specs
+// wipe the settings of input specs
 	ldi tmp1, 0b11110000
 	and tmp0, tmp1
-	// set the desired input
-	ldi tmp1, 4
+// set the desired input
+	ldi tmp1, 5
 	or tmp0, tmp1
 	sts ADMUX, tmp0
 
-	// Start analog conversion by setting the ADSC bit to 1
+// Start analog conversion by setting the ADSC bit to 1
 	lds tmp0, ADCSRA
 	ldi tmp1, 0b01000000
 	or tmp0, tmp1
 	sts ADCSRA, tmp0
 
+// --- Read Y ---
 update_joystick_wait_Y:
 	lds tmp0, ADCSRA
 	ldi tmp1, 0b01000000
 	and tmp0, tmp1
 	cpi	tmp0 , 0 // check if the ADSC bit is 0 (ready)
-	brne update_joystick_wait_Y
-
+brne update_joystick_wait_Y
 
 	lds tmp0, ADCH
 
 	cpi tmp0, 96
-	brlo update_joystick_is_down
+brlo update_joystick_is_down
 	cpi tmp0, 161
-	brsh update_joystick_is_up
-	// if neutral
-	jmp update_joystick_Y_done
+brsh update_joystick_is_up
+// if neutral
+jmp update_joystick_X
 
 update_joystick_is_down:
-	ldi tmp0, 0b11111100
-	and tmp0, direction
-	ldi tmp1, 0b00000010 // set bit 1 (up) in direction to 1
-	or tmp0, tmp1
-	mov direction, tmp0
-	jmp update_joystick_Y_done
+	ldi tmp2, 0b00001000
+jmp update_joystick_direction
 
 update_joystick_is_up:
-	ldi tmp0, 0b11111100
-	and tmp0, direction
-	ldi tmp1, 0b00000001 // set bit 0 (down) in direction to 1
+	ldi tmp2, 0b00000100
+jmp update_joystick_direction
+
+update_joystick_X:
+// --- Setting up for reading of X ---
+// load the current analog settings
+	lds tmp0, ADMUX
+// wipe the settings of input specs
+	ldi tmp1, 0b11110000
+	and tmp0, tmp1
+// set the desired input
+	ldi tmp1, 4
 	or tmp0, tmp1
+	sts ADMUX, tmp0
+
+// Start analog conversion by setting the ADSC bit to 1
+	lds tmp0, ADCSRA
+	ldi tmp1, 0b01000000
+	or tmp0, tmp1
+	sts ADCSRA, tmp0
+// --- Read X ---
+update_joystick_wait_X:
+	lds tmp0, ADCSRA
+	ldi tmp1, 0b01000000
+	and tmp0, tmp1
+	cpi	tmp0, 0 // check if the ADSC bit is 0 (ready)
+brne update_joystick_wait_X
+
+	lds tmp0, ADCH
+
+	cpi tmp0, 96
+	brlo update_joystick_is_right
+	cpi tmp0, 161
+	brsh update_joystick_is_left
+// we only get here is both directions are neutral
+jmp dont_update_joystick_direction
+
+update_joystick_is_right:
+	ldi tmp2, 0b00000001
+jmp update_joystick_direction
+
+update_joystick_is_left:
+	ldi tmp2, 0b00000010
+jmp update_joystick_direction
+
+update_joystick_direction:
+// Update direction using tmp2 which is set by joystick code
+	ldi tmp0, 0b11110000
+	and tmp0, direction // mask out relevant bits
+	or tmp0, tmp2 // or in direction bits
 	mov direction, tmp0
-	jmp update_joystick_Y_done
-update_joystick_Y_done:
-	/*in tmp0, PORTC
-	bst tmp0, 5
-	bld tmp1, 0 // X
-	bst tmp0, 4
-	bld tmp1, 1 // Y*/
+
+dont_update_joystick_direction:
+ret
+
+// ----------------------------- Move and store snurkh -----------------------------
+update_snurkh:
+// Get head position
+	ldi XH, HIGH(snurkh_body)
+	ldi XL, LOW(snurkh_body)
+
+	ld tmp0, X // Store head position in tmp0
+
+	ldi tmp1, 0b00000111 // mask for x
+	and tmp1, tmp0 // get x value
+
+	ldi tmp2, 0b00111000 // mask for y
+	and tmp2, tmp0 // get y value
+	lsr tmp2 // right align y bits
+	lsr tmp2
+	lsr tmp2
 
 
-	ret
+	sbrs direction, 0 // skip next if right = 1
+jmp dont_snurkh_right
+	subi tmp1, -1
+
+	sbrc tmp1, 3
+	subi tmp1, 8
+dont_snurkh_right:
+
+	sbrs direction, 1 // skip next if left = 1
+jmp dont_snurkh_left
+// if we are at 0 then set to 8 to wrap around
+	cpse tmp1, zero // skip next skip if tmp1 = 0
+	cpse zero, zero // always skip
+	ldi tmp1, 8
+
+	subi tmp1, 1
+dont_snurkh_left:
+
+	sbrs direction, 2 // skip next if up = 1
+jmp dont_snurkh_up
+// if we are at 0 then set to 8 to wrap around
+	cpse tmp2, zero
+	cpse zero, zero
+	ldi tmp2, 8
+
+	subi tmp2, 1
+dont_snurkh_up:
+
+	sbrs direction, 3 // skip next if down = 1
+jmp dont_snurkh_down
+	subi tmp2, -1
+
+	sbrc tmp2, 3
+	subi tmp2, 8
+dont_snurkh_down:
+
+// Write snurkh head to light matrix
+	clr arg0
+	or arg0, tmp1
+	clr arg1
+	or arg1, tmp2
+	call set_bit
+
+// Write snurkh head to memory
+	lsl tmp2 // alight y pos properly
+	lsl tmp2
+	lsl tmp2
+	or tmp2, tmp1 // or together the positions
+	st X, tmp2 // store in head position
+
+// calc target pos
+// check for food at pos
+update_snurkh_loop:
+// fetch cur pos
+// stor tar pos
+// if end of snake && hasfood -> addpart
+// if not end of snake -> loop
+
+ret
