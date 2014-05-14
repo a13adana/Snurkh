@@ -5,6 +5,7 @@
  *   Author: Tesla Hassel, Vicktor Knutsson, Niklas Blindlagd, Adam Örondal
  */ 
 
+// ----------- Ephemeral variables -----------
 .DEF tmp0				= r16
 .DEF tmp1				= r17
 .DEF tmp2				= r18
@@ -13,6 +14,7 @@
 .DEF arg0				= r20
 .DEF arg1				= r21
 .DEF arg2				= r22
+// ----------- Non-ephemeral variables -----------
 .DEF direction			= r23
 .DEF sav0				= r25
 .DEF sav1				= r15
@@ -23,7 +25,7 @@
 
 .DSEG
 light_rows:	.BYTE		8 // light matrix
-snurkh_body: .BYTE		64
+snurkh_body: .BYTE		64 // F E XXX YYY (F = Ate Fruit Bit, E = End of Snake)
 
 .CSEG
 // ----------------------------- Set interrupt jumps -----------------------------
@@ -38,74 +40,39 @@ init:
 	ldi tmp0 , LOW(RAMEND)
 	out SPL, tmp0 
 
-	and ticks, zero
 // ----------------------------- Set zero register -----------------------------
 	clr zero
 
-// ----------------------------- Zero data in light matrix -----------------------------
-	ldi XH, HIGH(light_rows)
-	ldi XL, LOW(light_rows)
-
-	ldi tmp2, 0b00000000
-	st	X+, tmp2
-	ldi	tmp2, 0b00000000
-	st	X+, tmp2
-	ldi	tmp2, 0b00000000
-	st	X+, tmp2
-	ldi	tmp2, 0b00000000
-	st	X+, tmp2
-	ldi	tmp2, 0b00000000
-	st	X+, tmp2
-	ldi	tmp2, 0b00000000
-	st	X+, tmp2
-	ldi	tmp2, 0b00000000
-	st	X+, tmp2
-	ldi	tmp2, 0b00000000
-	st	X+, tmp2
-
-	// Code to light up corners
-	/*ldi arg0, 0
-	ldi arg1, 0
-	call set_bit_at
-
-	ldi arg0, 0
-	ldi arg1, 7
-	call set_bit_at
-
-	ldi arg0, 7
-	ldi arg1, 0
-	call set_bit_at
-
-	ldi arg0, 7
-	ldi arg1, 7
-	call set_bit_at*/
-
+// ----------------------------- Zero tick counter -----------------------------
+	and ticks, zero
+	
 // ----------------------------- Zero out snurkh_body memory -----------------------------
 	ldi XH, HIGH(snurkh_body)
 	ldi XL, LOW(snurkh_body)
 
-	ldi tmp0, 0b00000000
 	ldi tmp1, 64
 
 snurkh_body_zero_loop:
-	st	X+, tmp0
+	st	X+, zero
 	subi tmp1, 1
-	cpi tmp1, 0
-	brge snurkh_body_zero_loop
+	cpi tmp1, 1
+brsh snurkh_body_zero_loop
 
-// ----------------------------- Create Snurkh head, set start direction -----------------------------
+// ----------------------------- Create start Snurkh, set start direction -----------------------------
 	ldi XH, HIGH(snurkh_body)
 	ldi XL, LOW(snurkh_body)
-
-	ldi tmp0, 0b00011011		// 7 unused, 6 follow, 3-5 Ypos, 0-2 Xpos
+	
+	// ------ Create head -------
+	ldi tmp0, 0b00011011		// 7 AFB, 6 EoS, 3-5 Ypos, 0-2 Xpos
 	st	X+, tmp0
-	ldi direction, 0b00000001	// 0000 Down Up Left Right
 	// ------- Create a body part --------
-	ldi tmp0, 0b00011010		// 7 unused, 6 follow, 3-5 Ypos, 0-2 Xpos
+	ldi tmp0, 0b00011010		// 7 AFB, 6 EoS, 3-5 Ypos, 0-2 Xpos
 	st	X+, tmp0
 	// ------ Create tail -------
-	ldi tmp0, 0b01011001		// 7 unused, 6 follow, 3-5 Ypos, 0-2 Xpos
+	ldi tmp0, 0b01011001		// 7 AFB, 6 EoS, 3-5 Ypos, 0-2 Xpos
 	st	X+, tmp0
+	// ------ Set direction------
+	ldi direction, 0b00000001	// 0000 Down Up Left Right
 
 // ----------------------------- Create initial fruit -----------------------------
 	ldi tmp0, 0b00110110 // TODO: this should be random
@@ -114,16 +81,16 @@ snurkh_body_zero_loop:
 
 // ------------------- Set DDR registers to output on LEDs and input on everything else -------------------
 	ldi tmp0 , 0b00111111
-	out DDRB, tmp0 
+	out DDRB, tmp0
 	ldi tmp0 , 0b00001111
-	out DDRC, tmp0 
+	out DDRC, tmp0
 	ldi tmp0 , 0b11111100
-	out DDRD, tmp0 
+	out DDRD, tmp0
 
-	ldi tmp0 , 0x00
-	out PORTB, tmp0 
-	out PORTC, tmp0 
-	out PORTD, tmp0 
+// Write zero to ports
+	out PORTB, zero 
+	out PORTC, zero 
+	out PORTD, zero 
 
 // ----------------------------- Set A/D converter stuff -----------------------------
 
@@ -159,27 +126,26 @@ snurkh_body_zero_loop:
 main:
 	clr ticks // Zero out ticks before it is used.
 
-// Clear matrix
+// -------- Zero data in light matrix --------
 	ldi YH, HIGH(light_rows)
 	ldi YL, LOW(light_rows)
-	clr tmp0
-	ldi tmp1, 1
-	st Y, tmp0
-	add	YL,	tmp1
-	st Y, tmp0
-	add	YL,	tmp1
-	st Y, tmp0
-	add	YL,	tmp1
-	st Y, tmp0
-	add	YL,	tmp1
-	st Y, tmp0
-	add	YL,	tmp1
-	st Y, tmp0
-	add	YL,	tmp1
-	st Y, tmp0
-	add	YL,	tmp1
-	st Y, tmp0
-	add	YL,	tmp1
+
+	ldi tmp0, 8
+
+light_matrix_zero_loop:
+	st	Y+, zero
+	subi tmp0, 1
+	cpi tmp0, 1
+brsh light_matrix_zero_loop
+	/*
+	st Y+, zero
+	st Y+, zero
+	st Y+, zero
+	st Y+, zero
+	st Y+, zero
+	st Y+, zero
+	st Y+, zero
+	st Y+, zero*/
 
 	call update_joystick // TODO: insert code here
 	// spawn food
