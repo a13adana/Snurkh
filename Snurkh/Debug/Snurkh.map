@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.52  P:\GitHub\Snurkh\Snurkh\Snurkh.asm Tue May 13 18:51:41 2014
+AVRASM ver. 2.1.52  P:\GitHub\Snurkh\Snurkh\Snurkh.asm Wed May 14 16:30:02 2014
 
 
 EQU  SIGNATURE_000 0000001e
@@ -702,37 +702,39 @@ DEF  arg0         r20
 DEF  arg1         r21
 DEF  arg2         r22
 DEF  direction    r23
-DEF  posX         r25
-DEF  posY         r15
+DEF  sav0         r25
+DEF  sav1         r15
 DEF  ticks        r3
+DEF  fruit_pos    r4
 DEF  zero         r0
 DSEG light_rows   00000100
 DSEG snurkh_body  00000108
 CSEG init         00000022
-CSEG on_timer_interrupt 000000fd
-CSEG snurkh_body_zero_loop 00000040
-CSEG main         00000067
-CSEG update_joystick 00000115
-CSEG update_snurkh 0000015e
-CSEG draw         00000080
-CSEG render_loop1 00000084
-CSEG render_loop2 000000b6
-CSEG on_timer_interrupt_end 00000104
-CSEG set_bit_at   00000106
-CSEG set_bit      00000106
-CSEG loop_start_shifty 0000010c
-CSEG out_of_loop  00000112
-CSEG update_joystick_wait_Y 00000123
-CSEG update_joystick_is_down 00000131
-CSEG update_joystick_is_up 00000134
-CSEG update_joystick_X 00000137
-CSEG update_joystick_direction 00000159
-CSEG update_joystick_wait_X 00000145
-CSEG update_joystick_is_right 00000153
-CSEG update_joystick_is_left 00000156
-CSEG dont_update_joystick_direction 0000015d
-CSEG dont_snurkh_right 0000016e
-CSEG dont_snurkh_left 00000175
-CSEG dont_snurkh_up 0000017c
-CSEG dont_snurkh_down 00000182
-CSEG update_snurkh_loop 0000018d
+CSEG on_timer_interrupt 00000102
+CSEG snurkh_body_zero_loop 0000003e
+CSEG main         0000006c
+CSEG update_joystick 0000011a
+CSEG update_snurkh 00000163
+CSEG draw         00000085
+CSEG render_loop1 00000089
+CSEG render_loop2 000000bb
+CSEG on_timer_interrupt_end 00000109
+CSEG set_bit_at   0000010b
+CSEG set_bit      0000010b
+CSEG loop_start_shifty 00000111
+CSEG out_of_loop  00000117
+CSEG update_joystick_wait_Y 00000128
+CSEG update_joystick_is_down 00000136
+CSEG update_joystick_is_up 00000139
+CSEG update_joystick_X 0000013c
+CSEG update_joystick_direction 0000015e
+CSEG update_joystick_wait_X 0000014a
+CSEG update_joystick_is_right 00000158
+CSEG update_joystick_is_left 0000015b
+CSEG dont_update_joystick_direction 00000162
+CSEG dont_snurkh_right 00000177
+CSEG dont_snurkh_left 0000017e
+CSEG dont_snurkh_up 00000185
+CSEG dont_snurkh_down 0000018b
+CSEG update_snurkh_loop 000001ab
+CSEG update_snurkh_paste_eos 000001d0

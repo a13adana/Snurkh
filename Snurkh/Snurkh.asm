@@ -14,9 +14,10 @@
 .DEF arg1				= r21
 .DEF arg2				= r22
 .DEF direction			= r23
-.DEF posX				= r25
-.DEF posY				= r15
+.DEF sav0				= r25
+.DEF sav1				= r15
 .DEF ticks				= r3 // Most significant bit used to determine whether to update
+.DEF fruit_pos			= r4 // Uses same coordinate system as snurkh
 
 .DEF zero				= r0 // Always 0
 
@@ -37,8 +38,6 @@ init:
 	ldi tmp0 , LOW(RAMEND)
 	out SPL, tmp0 
 
-	ldi posX, 0
-	and posY, zero
 	and ticks, zero
 // ----------------------------- Set zero register -----------------------------
 	clr zero
@@ -99,8 +98,19 @@ snurkh_body_zero_loop:
 	ldi XL, LOW(snurkh_body)
 
 	ldi tmp0, 0b00011011		// 7 unused, 6 follow, 3-5 Ypos, 0-2 Xpos
-	st	X, tmp0
+	st	X+, tmp0
 	ldi direction, 0b00000001	// 0000 Down Up Left Right
+	// ------- Create a body part --------
+	ldi tmp0, 0b00011010		// 7 unused, 6 follow, 3-5 Ypos, 0-2 Xpos
+	st	X+, tmp0
+	// ------ Create tail -------
+	ldi tmp0, 0b01011001		// 7 unused, 6 follow, 3-5 Ypos, 0-2 Xpos
+	st	X+, tmp0
+
+// ----------------------------- Create initial fruit -----------------------------
+	ldi tmp0, 0b00110110 // TODO: this should be random
+	clr fruit_pos
+	or fruit_pos, tmp0
 
 // ------------------- Set DDR registers to output on LEDs and input on everything else -------------------
 	ldi tmp0 , 0b00111111
@@ -349,8 +359,9 @@ jmp draw // Draw until interrupt from timer
 // ----------------------------- Timer interrupt code -----------------------------
 on_timer_interrupt:
 	push tmp0
+	
 	inc ticks
-	ldi tmp0, 30 // ticks/update
+	ldi tmp0, 25 // ticks/update
 	cp ticks, tmp0
 	brlo on_timer_interrupt_end
 // Set update flag
@@ -362,13 +373,13 @@ reti
 
 // ----------------------------- Set bit specified by arguments -----------------------------
 set_bit_at:
-set_bit: // arg0 = row, arg1 = column
+set_bit: // arg0 = x, arg1 = y
 	// Load base addr
 	ldi YH, HIGH(light_rows)
 	ldi YL, LOW(light_rows)
 	// Offset with rows
 	// Fuck overflow 4 lyfe #YOLO_SWAG
-	add	YL,	arg0
+	add	YL,	arg1
 	// Load byte
 	ld tmp0, Y
 
@@ -377,7 +388,7 @@ set_bit: // arg0 = row, arg1 = column
 
 	// Shifts the bit until right
 	loop_start_shifty:
-	cp tmp4, arg1
+	cp tmp4, arg0
 	brge out_of_loop
 	lsl tmp3
 	adiw tmp4, 1
@@ -398,7 +409,7 @@ update_joystick:
 	ldi tmp1, 0b11110000
 	and tmp0, tmp1
 // set the desired input
-	ldi tmp1, 5
+	ldi tmp1, 4
 	or tmp0, tmp1
 	sts ADMUX, tmp0
 
@@ -441,7 +452,7 @@ update_joystick_X:
 	ldi tmp1, 0b11110000
 	and tmp0, tmp1
 // set the desired input
-	ldi tmp1, 4
+	ldi tmp1, 5
 	or tmp0, tmp1
 	sts ADMUX, tmp0
 
@@ -487,12 +498,16 @@ ret
 
 // ----------------------------- Move and store snurkh -----------------------------
 update_snurkh:
+	push sav0
+	push sav1
 // Get head position
 	ldi XH, HIGH(snurkh_body)
 	ldi XL, LOW(snurkh_body)
 
 	ld tmp0, X // Store head position in tmp0
-
+	clr sav0
+	or sav0, tmp0
+	
 	ldi tmp1, 0b00000111 // mask for x
 	and tmp1, tmp0 // get x value
 
@@ -551,14 +566,99 @@ dont_snurkh_down:
 	lsl tmp2
 	lsl tmp2
 	or tmp2, tmp1 // or together the positions
-	st X, tmp2 // store in head position
+	ldi XH, HIGH(snurkh_body)
+	ldi XL, LOW(snurkh_body)
+	clr sav1
+	or sav1, tmp2
+	st X+, tmp2 // store in head position
 
-// calc target pos
-// check for food at pos
+// Check for food at head pos
+	ldi arg0, 0b00000111 // mask for x
+	and arg0, fruit_pos // get x value
+	ldi arg1, 0b00111000 // mask for y
+	and arg1, fruit_pos // get y value
+	lsr arg1 // right align y bits
+	lsr arg1
+	lsr arg1
+	call set_bit // draw snake part
+
+	ldi tmp0, 0b00111111
+	and tmp0, fruit_pos // mask out position bits (prob not needed)
+	ldi tmp1, 0b00111111
+	and tmp1, sav1 // mask out position bits (prob not needed)
+	cp tmp0, tmp1 // head is at fruit pos
+	brne update_snurkh_loop // don't grow
+	// grow
+	ldi tmp0, 0b10000000
+	or sav0, tmp0 // set ate_fruit_bit AFB
 update_snurkh_loop:
+	ldi arg0, 0b00000111 // mask for x
+	and arg0, sav0 // get x value
+
+	ldi arg1, 0b00111000 // mask for y
+	and arg1, sav0 // get y value
+	lsr arg1 // right align y bits
+	lsr arg1
+	lsr arg1
+	call set_bit // draw snake part
+	
+	ldi tmp1, 0b01111111
+	and tmp1, sav0// copy target position (except AFB)
+	ldi tmp2, 0b10000000
+	and tmp2, sav0 // copy AFB
+	ld sav0, X // fetch current position
+	or sav0, tmp2
+	//bst tmp2, 7 // pass AFB (fruit) bit to next segment
+	//bld sav0, 7
+
+	ldi tmp2, 0b01111111
+	and tmp1, tmp2
+
+	// --- Check for collision with self ---
+	ldi tmp2, 0b00111111
+	and tmp2, sav1
+	ldi tmp3, 0b00111111
+	and tmp3, sav0
+	// restart on collision
+	sbrs sav0, 6
+	cpse tmp2, tmp3
+	cpse zero, zero
+	jmp init
+
+	sbrs sav0, 6 // if this isn't the tail
+	sbrs sav0, 7 // and we have no fruit
+jmp update_snurkh_paste_eos // do a little skip
+
+	ldi tmp2, 0b00111111 // clear register of eos and AFB flag bit
+	and tmp1, tmp2
+	st X+, tmp1 // save this part
+
+	clr tmp1
+	ldi tmp2, 0b01111111 // clear register of AFB flag bit
+	and sav0, tmp2
+	or tmp1, sav0// copy the new tail piece
+
+update_snurkh_paste_eos:
+	ldi tmp2, 0b01000000 // paste over the eos (end of snake) flag bit
+	and tmp2, sav0 // using mask
+	or tmp1, tmp2 // and copy the result to target position
+	st X+, tmp1 // store target position as current position
+	
+
+	/*sbrs sav0, 6 // if this is the tail
+	sbrc sav0, 7 // and we have a fruit
+	cpse zero, zero
+jmp update_snurkh_end_addpiece*/
+
+	
+sbrs sav0, 6
+jmp update_snurkh_loop
+
 // fetch cur pos
 // stor tar pos
 // if end of snake && hasfood -> addpart
 // if not end of snake -> loop
 
+	pop sav1
+	pop sav0
 ret
