@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.52  P:\GitHub\Snurkh\Snurkh\Snurkh.asm Wed May 14 17:47:04 2014
+AVRASM ver. 2.1.52  P:\GitHub\Snurkh\Snurkh\Snurkh.asm Mon May 19 17:19:27 2014
 
 
 EQU  SIGNATURE_000 0000001e
@@ -701,12 +701,12 @@ DEF  tmp4         r24
 DEF  arg0         r20
 DEF  arg1         r21
 DEF  arg2         r22
-DEF  direction    r23
-DEF  sav0         r25
-DEF  sav1         r15
+DEF  zero         r0
 DEF  ticks        r3
 DEF  fruit_pos    r4
-DEF  zero         r0
+DEF  sav1         r15
+DEF  direction    r23
+DEF  sav0         r25
 DSEG light_rows   00000100
 DSEG snurkh_body  00000108
 CSEG init         00000022
@@ -733,9 +733,10 @@ CSEG update_joystick_wait_X 00000129
 CSEG update_joystick_is_right 00000137
 CSEG update_joystick_is_left 0000013a
 CSEG dont_update_joystick_direction 00000141
-CSEG dont_snurkh_right 00000156
-CSEG dont_snurkh_left 0000015d
-CSEG dont_snurkh_up 00000164
-CSEG dont_snurkh_down 0000016a
-CSEG update_snurkh_loop 0000018a
-CSEG update_snurkh_paste_eos 000001af
+CSEG dont_snurkh_right 00000158
+CSEG snurkh_movement_done 00000170
+CSEG dont_snurkh_left 00000161
+CSEG dont_snurkh_up 0000016a
+CSEG dont_snurkh_down 00000170
+CSEG update_snurkh_loop 0000018e
+CSEG update_snurkh_paste_eos 000001ac
