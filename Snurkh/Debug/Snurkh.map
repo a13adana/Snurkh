@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.52  P:\GitHub\Snurkh\Snurkh\Snurkh.asm Mon May 19 17:19:27 2014
+AVRASM ver. 2.1.52  \\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm Fri May 23 11:01:27 2014
 
 
 EQU  SIGNATURE_000 0000001e
@@ -709,34 +709,38 @@ DEF  direction    r23
 DEF  sav0         r25
 DSEG light_rows   00000100
 DSEG snurkh_body  00000108
+DSEG random_store 00000148
 CSEG init         00000022
-CSEG on_timer_interrupt 000000e1
+CSEG on_timer_interrupt 0000019c
 CSEG snurkh_body_zero_loop 0000002b
 CSEG main         00000058
 CSEG light_matrix_zero_loop 0000005c
-CSEG update_joystick 000000f9
-CSEG update_snurkh 00000142
-CSEG draw         00000064
-CSEG render_loop1 00000068
-CSEG render_loop2 0000009a
-CSEG on_timer_interrupt_end 000000e8
-CSEG set_bit_at   000000ea
-CSEG set_bit      000000ea
-CSEG loop_start_shifty 000000f0
-CSEG out_of_loop  000000f6
-CSEG update_joystick_wait_Y 00000107
-CSEG update_joystick_is_down 00000115
-CSEG update_joystick_is_up 00000118
-CSEG update_joystick_X 0000011b
-CSEG update_joystick_direction 0000013d
-CSEG update_joystick_wait_X 00000129
-CSEG update_joystick_is_right 00000137
-CSEG update_joystick_is_left 0000013a
-CSEG dont_update_joystick_direction 00000141
-CSEG dont_snurkh_right 00000158
-CSEG snurkh_movement_done 00000170
-CSEG dont_snurkh_left 00000161
-CSEG dont_snurkh_up 0000016a
-CSEG dont_snurkh_down 00000170
-CSEG update_snurkh_loop 0000018e
-CSEG update_snurkh_paste_eos 000001ac
+CSEG update_joystick_wait_Y 0000006e
+CSEG update_joystick_is_down 0000007c
+CSEG update_joystick_is_up 0000007f
+CSEG update_joystick_X 00000082
+CSEG update_joystick_direction 000000a4
+CSEG update_joystick_wait_X 00000090
+CSEG update_joystick_is_right 0000009e
+CSEG update_joystick_is_left 000000a1
+CSEG dont_update_joystick_direction 000000a8
+CSEG update_snurkh 000000a8
+CSEG dont_snurkh_right 000000be
+CSEG snurkh_movement_done 000000d6
+CSEG dont_snurkh_left 000000c7
+CSEG dont_snurkh_up 000000d0
+CSEG dont_snurkh_down 000000d6
+CSEG set_bit      000001a5
+CSEG update_snurkh_loop 000000f5
+CSEG update_snurkh_paste_eos 00000113
+CSEG randomize_fruit_pos 000001b4
+CSEG draw         0000011f
+CSEG render_loop1 00000123
+CSEG render_loop2 00000155
+CSEG on_timer_interrupt_end 000001a3
+CSEG loop_start_shifty 000001ab
+CSEG out_of_loop  000001b1
+CSEG rget_pos     000001b4
+CSEG get_noise    000001d0
+CSEG rand_loop    000001c3
+CSEG bring_the_noise 000001de

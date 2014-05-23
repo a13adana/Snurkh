@@ -1,17 +1,17 @@
 <ASSEMBLER_INFO>
  <VERSION>2.1.52</VERSION>
  <DEVICE>"ATmega328P"</DEVICE>
- <WORKING_DIR>P:\GitHub\Snurkh\Snurkh\Debug</WORKING_DIR>
+ <WORKING_DIR>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Debug</WORKING_DIR>
  <INCLUDE_PATH>
   <DIR>C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.39.1005\avrassembler\Include</DIR>
   <DIR></DIR>
  </INCLUDE_PATH>
- <SOURCE_FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</SOURCE_FILE>
+ <SOURCE_FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</SOURCE_FILE>
  <INCLUDED_FILES>
   <FILE>C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.39.1005\avrassembler\Include\m328Pdef.inc</FILE>
  </INCLUDED_FILES>
  <OBJECT_FILES>
-  <FILE>P:\GitHub\Snurkh\Snurkh\Debug/Snurkh.obj</FILE>
+  <FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Debug/Snurkh.obj</FILE>
  </OBJECT_FILES>
  <HEX_FILES>
   <FILE>Snurkh.hex</FILE>
@@ -21,38 +21,42 @@
   <FILE>Snurkh.lss</FILE>
  </OUTPUT_FILES>
  <LABELS>
-  <light_rows><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>27</LINE></light_rows>
-  <snurkh_body><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>28</LINE></snurkh_body>
-  <init><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>36</LINE></init>
-  <on_timer_interrupt><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>317</LINE></on_timer_interrupt>
-  <snurkh_body_zero_loop><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>55</LINE></snurkh_body_zero_loop>
-  <main><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>126</LINE></main>
-  <light_matrix_zero_loop><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>135</LINE></light_matrix_zero_loop>
-  <update_joystick><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>361</LINE></update_joystick>
-  <update_snurkh><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>457</LINE></update_snurkh>
-  <draw><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>152</LINE></draw>
-  <render_loop1><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>159</LINE></render_loop1>
-  <render_loop2><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>229</LINE></render_loop2>
-  <on_timer_interrupt_end><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>327</LINE></on_timer_interrupt_end>
-  <set_bit_at><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>332</LINE></set_bit_at>
-  <set_bit><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>333</LINE></set_bit>
-  <loop_start_shifty><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>347</LINE></loop_start_shifty>
-  <out_of_loop><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>353</LINE></out_of_loop>
-  <update_joystick_wait_Y><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>380</LINE></update_joystick_wait_Y>
-  <update_joystick_is_down><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>396</LINE></update_joystick_is_down>
-  <update_joystick_is_up><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>400</LINE></update_joystick_is_up>
-  <update_joystick_X><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>404</LINE></update_joystick_X>
-  <update_joystick_direction><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>446</LINE></update_joystick_direction>
-  <update_joystick_wait_X><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>422</LINE></update_joystick_wait_X>
-  <update_joystick_is_right><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>438</LINE></update_joystick_is_right>
-  <update_joystick_is_left><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>442</LINE></update_joystick_is_left>
-  <dont_update_joystick_direction><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>453</LINE></dont_update_joystick_direction>
-  <dont_snurkh_right><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>488</LINE></dont_snurkh_right>
-  <snurkh_movement_done><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>516</LINE></snurkh_movement_done>
-  <dont_snurkh_left><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>498</LINE></dont_snurkh_left>
-  <dont_snurkh_up><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>508</LINE></dont_snurkh_up>
-  <dont_snurkh_down><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>515</LINE></dont_snurkh_down>
-  <update_snurkh_loop><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>560</LINE></update_snurkh_loop>
-  <update_snurkh_paste_eos><FILE>P:\GitHub\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>602</LINE></update_snurkh_paste_eos>
+  <light_rows><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>27</LINE></light_rows>
+  <snurkh_body><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>28</LINE></snurkh_body>
+  <random_store><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>29</LINE></random_store>
+  <init><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>37</LINE></init>
+  <on_timer_interrupt><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>564</LINE></on_timer_interrupt>
+  <snurkh_body_zero_loop><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>56</LINE></snurkh_body_zero_loop>
+  <main><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>127</LINE></main>
+  <light_matrix_zero_loop><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>136</LINE></light_matrix_zero_loop>
+  <update_joystick_wait_Y><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>161</LINE></update_joystick_wait_Y>
+  <update_joystick_is_down><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>177</LINE></update_joystick_is_down>
+  <update_joystick_is_up><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>181</LINE></update_joystick_is_up>
+  <update_joystick_X><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>185</LINE></update_joystick_X>
+  <update_joystick_direction><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>227</LINE></update_joystick_direction>
+  <update_joystick_wait_X><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>203</LINE></update_joystick_wait_X>
+  <update_joystick_is_right><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>219</LINE></update_joystick_is_right>
+  <update_joystick_is_left><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>223</LINE></update_joystick_is_left>
+  <dont_update_joystick_direction><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>234</LINE></dont_update_joystick_direction>
+  <update_snurkh><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>239</LINE></update_snurkh>
+  <dont_snurkh_right><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>270</LINE></dont_snurkh_right>
+  <snurkh_movement_done><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>298</LINE></snurkh_movement_done>
+  <dont_snurkh_left><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>280</LINE></dont_snurkh_left>
+  <dont_snurkh_up><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>290</LINE></dont_snurkh_up>
+  <dont_snurkh_down><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>297</LINE></dont_snurkh_down>
+  <set_bit><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>579</LINE></set_bit>
+  <update_snurkh_loop><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>342</LINE></update_snurkh_loop>
+  <update_snurkh_paste_eos><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>381</LINE></update_snurkh_paste_eos>
+  <randomize_fruit_pos><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>607</LINE></randomize_fruit_pos>
+  <draw><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>397</LINE></draw>
+  <render_loop1><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>404</LINE></render_loop1>
+  <render_loop2><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>474</LINE></render_loop2>
+  <on_timer_interrupt_end><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>574</LINE></on_timer_interrupt_end>
+  <loop_start_shifty><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>593</LINE></loop_start_shifty>
+  <out_of_loop><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>599</LINE></out_of_loop>
+  <rget_pos><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>608</LINE></rget_pos>
+  <get_noise><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>667</LINE></get_noise>
+  <rand_loop><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>636</LINE></rand_loop>
+  <bring_the_noise><FILE>\\hsnas3\StudentHome\2013\a13adana\Documents\maskinnara_da111g\Snurkh\Snurkh\Snurkh.asm</FILE><LINE>684</LINE></bring_the_noise>
  </LABELS>
 </ASSEMBLER_INFO>

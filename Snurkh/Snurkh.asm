@@ -26,6 +26,7 @@
 .DSEG
 light_rows:	.BYTE		8		// light matrix
 snurkh_body: .BYTE		64		// F E XXX YYY (F = Ate Fruit Bit, E = End of Snake)
+random_store: .BYTE		8		// here we store our randomness
 
 .CSEG
 // ----------------------------- Set interrupt jumps -----------------------------
@@ -122,9 +123,9 @@ brsh snurkh_body_zero_loop
 	or tmp1, tmp0
 	sts TIMSK0, tmp1
 
-// ----------------------------- Main loop -----------------------------
+// --------------------------------------------------- Start of main loop ---------------------------------------------------
 main:
-	clr ticks // Zero out ticks before it is used.
+	clr ticks // Zero out ticks at the beginning of every cycle
 
 // -------- Zero data in light matrix --------
 	ldi YH, HIGH(light_rows)
@@ -138,18 +139,262 @@ light_matrix_zero_loop:
 	cpi tmp0, 1
 brsh light_matrix_zero_loop
 
-	call update_joystick // TODO: insert code here
-	// spawn food
-	call update_snurkh // TODO: insert code here
+// ----------------------- Update direction register using joystick -----------------------
+// --- Setting up for reading of Y ---
+// load the current analog settings
+	lds tmp0, ADMUX
+// wipe the settings of input specs
+	ldi tmp1, 0b11110000
+	and tmp0, tmp1
+// set the desired input
+	ldi tmp1, 4
+	or tmp0, tmp1
+	sts ADMUX, tmp0
 
-	/*subi posX, -1
+// Start analog conversion by setting the ADSC bit to 1
+	lds tmp0, ADCSRA
+	ldi tmp1, 0b01000000
+	or tmp0, tmp1
+	sts ADCSRA, tmp0
+
+// --- Read Y ---
+update_joystick_wait_Y:
+	lds tmp0, ADCSRA
+	ldi tmp1, 0b01000000
+	and tmp0, tmp1
+	cpi	tmp0 , 0	// check if the ADSC bit is 0 (ready)
+brne update_joystick_wait_Y
+
+	lds tmp0, ADCH
+
+	cpi tmp0, 96
+brlo update_joystick_is_down
+	cpi tmp0, 161
+brsh update_joystick_is_up
+// if neutral
+jmp update_joystick_X
+
+update_joystick_is_down:
+	ldi tmp2, 0b00001000
+jmp update_joystick_direction
+
+update_joystick_is_up:
+	ldi tmp2, 0b00000100
+jmp update_joystick_direction
+
+update_joystick_X:
+// --- Setting up for reading of X ---
+// load the current analog settings
+	lds tmp0, ADMUX
+// wipe the settings of input specs
+	ldi tmp1, 0b11110000
+	and tmp0, tmp1
+// set the desired input
+	ldi tmp1, 5
+	or tmp0, tmp1
+	sts ADMUX, tmp0
+
+// Start analog conversion by setting the ADSC bit to 1
+	lds tmp0, ADCSRA
+	ldi tmp1, 0b01000000
+	or tmp0, tmp1
+	sts ADCSRA, tmp0
+// --- Read X ---
+update_joystick_wait_X:
+	lds tmp0, ADCSRA
+	ldi tmp1, 0b01000000
+	and tmp0, tmp1
+	cpi	tmp0, 0			// check if the ADSC bit is 0 (ready)
+brne update_joystick_wait_X
+
+	lds tmp0, ADCH
+
+	cpi tmp0, 96
+	brlo update_joystick_is_right
+	cpi tmp0, 161
+	brsh update_joystick_is_left
+// we only get here is both directions are neutral
+jmp dont_update_joystick_direction
+
+update_joystick_is_right:
+	ldi tmp2, 0b00000001
+jmp update_joystick_direction
+
+update_joystick_is_left:
+	ldi tmp2, 0b00000010
+jmp update_joystick_direction
+
+update_joystick_direction:
+// Update direction using tmp2 which is set by joystick code
+	ldi tmp0, 0b11110000
+	and tmp0, direction		// mask out relevant bits
+	or tmp0, tmp2			// or in direction bits
+	mov direction, tmp0
+
+dont_update_joystick_direction:
+
+// TODO: spawn food
+
+// ----------------------------- Move and store snurkh -----------------------------
+update_snurkh:
+	push sav0
+	push sav1
+// Get head position
+	ldi XH, HIGH(snurkh_body)
+	ldi XL, LOW(snurkh_body)
+
+	ld tmp0, X				// Store head position in tmp0
+	clr sav0				// Clear sav0
+	or sav0, tmp0			// Load head position to sav0
+	
+	ldi tmp1, 0b00000111	// Mask for x
+	and tmp1, sav0			// Get x value
+
+	ldi tmp2, 0b00111000	// Mask for y
+	and tmp2, sav0			// Get y value
+	lsr tmp2				// Right align y bits
+	lsr tmp2
+	lsr tmp2
+
+	// sav0 = headbit
+	// tmp1 = xpos
+	// tmp2 = ypos
+
+	sbrs direction, 0		// Skip next if right = 1
+jmp dont_snurkh_right
+	subi tmp1, -1
+
+	sbrc tmp1, 3
+	subi tmp1, 8
+jmp snurkh_movement_done // no need to check other movement bits
+dont_snurkh_right:
+
+	sbrs direction, 1	// skip next if left = 1
+jmp dont_snurkh_left
+// if we are at 0 then set to 8 to wrap around
+	cpse tmp1, zero		// skip next skip if tmp1 = 0
+	cpse zero, zero		// always skip
+	ldi tmp1, 8
+	subi tmp1, 1
+jmp snurkh_movement_done // no need to check other movement bits
+dont_snurkh_left:
+
+	sbrs direction, 2	// skip next if up = 1
+jmp dont_snurkh_up
+// if we are at 0 then set to 8 to wrap around
+	cpse tmp2, zero
+	cpse zero, zero
+	ldi tmp2, 8
+	subi tmp2, 1
+jmp snurkh_movement_done // no need to check other movement bits
+dont_snurkh_up:
+
+	sbrs direction, 3	// skip next if down = 1
+jmp dont_snurkh_down
+	subi tmp2, -1 // tmp2++
+	sbrc tmp2, 3 // if tmp2 = 8
+	ldi tmp2, 0 // tmp2 = 0
+dont_snurkh_down:
+snurkh_movement_done:
+
+// Write snurkh head to light matrix
+	clr arg0
+	or arg0, tmp1
 	clr arg1
-	or arg1, posX
-	ldi arg0, 0
-	call set_bit*/
+	or arg1, tmp2
+	call set_bit
 
-// ----------------------------- Display code -----------------------------
-draw:	
+// Write snurkh head to memory
+	lsl tmp2		// align y pos properly
+	lsl tmp2
+	lsl tmp2
+	or tmp2, tmp1	// or-together the positions
+	
+	clr sav1
+	or sav1, tmp2	// store new head position in sav1
+	st X+, tmp2		// store in memory and increment X
+
+// Draw fruit
+	ldi arg0, 0b00000111	// Mask for x
+	and arg0, fruit_pos		// Get x value
+	ldi arg1, 0b00111000	// Mask for y
+	and arg1, fruit_pos		// Get y value
+	lsr arg1				// Right align y bits
+	lsr arg1
+	lsr arg1
+	call set_bit			// Draw fruit
+
+// sav0 = old head position
+// sav1 = new head position
+
+// Check for food at head pos
+	ldi tmp0, 0b00111111	// Mask for position
+	and tmp0, fruit_pos		// Mask out position bits from fruit (prob not needed)
+	ldi tmp1, 0b00111111	// Mask for position
+	and tmp1, sav1			// Mask out position bits from new head position
+	cp tmp0, tmp1			// Check if head is at fruit pos
+	brne update_snurkh_loop // If positions differ, don't grow
+
+	// Grow
+	ldi tmp0, 0b10000000	// Mask for AFB
+	or sav1, tmp0			// Set ate_fruit_bit (AFB) at head
+	or fruit_pos, tmp0		// Indicate that a new fruit position needs to be generated
+update_snurkh_loop:
+	ldi arg0, 0b00000111	// Mask for x
+	and arg0, sav0			// Get x value
+
+	ldi arg1, 0b00111000	// Mask for y
+	and arg1, sav0			// Get y value
+
+	lsr arg1				// Right align y bits
+	lsr arg1
+	lsr arg1
+	call set_bit			// Draw snake part
+	
+	ldi tmp1, 0b01111111	// Mask for position and EoS
+	and tmp1, sav0			// Copy target position (except AFB)
+	ld sav0, X				// Fetch current position
+
+	// --- Check for collision with self ---
+	ldi tmp2, 0b00111111
+	and tmp2, sav1
+	ldi tmp3, 0b00111111
+	and tmp3, sav0
+	
+	// Restart on collision
+	sbrs sav0, 6
+	cpse tmp2, tmp3
+	cpse zero, zero
+	jmp init
+
+	sbrc sav0, 6			// if this isn't the tail
+	sbrs sav1, 7			// and we have no fruit
+jmp update_snurkh_paste_eos // do a little skip
+
+	ldi tmp2, 0b00111111	// clear register of eos and AFB flag bit
+	and tmp1, tmp2
+	st X+, tmp1				// save this part
+
+	clr tmp1
+	or tmp1, sav0			// copy the new tail piece
+
+update_snurkh_paste_eos:
+	ldi tmp2, 0b01000000	// paste over the EOS (end of snake) flag bit
+	and tmp2, sav0			// using mask
+	or tmp1, tmp2			// and copy the result to target position
+	st X+, tmp1				// store target position as current position
+	
+sbrs sav0, 6
+jmp update_snurkh_loop
+	
+	sbrc fruit_pos, 7		// If indacation bit to generate new fruit pos is set
+	call randomize_fruit_pos// Generate new fruit position
+	
+	pop sav1
+	pop sav0
+
+// ----------------------------- Draw content of light matrix -----------------------------
+draw:
 	clr tmp2
 	ldi XH, HIGH(light_rows)
 	ldi XL, LOW(light_rows)
@@ -310,9 +555,11 @@ render_loop2:
 	nop
 	out PORTD, zero
 	sbrc ticks, 7	// Check if we should stop draw loop
-jmp main
+jmp main			// Restart main loop if bit 7 of ticks is set
 jmp draw			// Draw until interrupt from timer
+// --------------------------------------------------- End of main loop ---------------------------------------------------
 
+// --------------------------------------------------- Loose subroutines ---------------------------------------------------
 // ----------------------------- Timer interrupt code -----------------------------
 on_timer_interrupt:
 	push tmp0
@@ -329,7 +576,6 @@ on_timer_interrupt_end:
 reti
 
 // ----------------------------- Set bit specified by arguments -----------------------------
-set_bit_at:
 set_bit:	// arg0 = x, arg1 = y
 	// Load base addr
 	ldi YH, HIGH(light_rows)
@@ -357,53 +603,48 @@ set_bit:	// arg0 = x, arg1 = y
 	st Y, tmp0
 ret
 
-// ----------------------------- Update direction register using joystick -----------------------------
-update_joystick:
-// --- Setting up for reading of Y ---
-// load the current analog settings
-	lds tmp0, ADMUX
-// wipe the settings of input specs
-	ldi tmp1, 0b11110000
-	and tmp0, tmp1
-// set the desired input
-	ldi tmp1, 4
-	or tmp0, tmp1
-	sts ADMUX, tmp0
+// ----------------------------- Randomise fruit position -----------------------------
+randomize_fruit_pos:
+	rget_pos:
+	call get_noise
+	// do stuff with noise for x, call noise puts stuff in arg0
+	add arg0, ticks
+	andi arg0, 0b00000111
+	mov arg1, arg0
 
-// Start analog conversion by setting the ADSC bit to 1
-	lds tmp0, ADCSRA
-	ldi tmp1, 0b01000000
-	or tmp0, tmp1
-	sts ADCSRA, tmp0
+	call get_noise
+	// do stuff with noise for y
+	add arg0, ticks
+	andi arg0, 0b00000111
 
-// --- Read Y ---
-update_joystick_wait_Y:
-	lds tmp0, ADCSRA
-	ldi tmp1, 0b01000000
-	and tmp0, tmp1
-	cpi	tmp0 , 0	// check if the ADSC bit is 0 (ready)
-brne update_joystick_wait_Y
+	lsl arg0
+	lsl arg0
+	lsl arg0
 
-	lds tmp0, ADCH
+	or arg1, arg0
 
-	cpi tmp0, 96
-brlo update_joystick_is_down
-	cpi tmp0, 161
-brsh update_joystick_is_up
-// if neutral
-jmp update_joystick_X
+	ldi XH, HIGH(snurkh_body)
+	ldi XL, LOW(snurkh_body)
 
-update_joystick_is_down:
-	ldi tmp2, 0b00001000
-jmp update_joystick_direction
+rand_loop:
+	ld tmp0, X+
+	clr tmp1
+	or tmp1, tmp0
 
-update_joystick_is_up:
-	ldi tmp2, 0b00000100
-jmp update_joystick_direction
+	andi tmp0, 0b00111111
+	
+	cpse tmp0, arg1 // redo randomize if position matches snake body pos
+	cpse zero, zero
+jmp rget_pos
 
-update_joystick_X:
-// --- Setting up for reading of X ---
-// load the current analog settings
+	sbrs tmp1, 7 // end loop if at EOS (end of snake) bit
+jmp rand_loop
+
+	mov fruit_pos, arg1
+ret
+
+get_noise:
+// PASTED FROM UPDATE_JOYSTICk_X
 	lds tmp0, ADMUX
 // wipe the settings of input specs
 	ldi tmp1, 0b11110000
@@ -418,198 +659,13 @@ update_joystick_X:
 	ldi tmp1, 0b01000000
 	or tmp0, tmp1
 	sts ADCSRA, tmp0
-// --- Read X ---
-update_joystick_wait_X:
+
+bring_the_noise: // read noise value
 	lds tmp0, ADCSRA
 	ldi tmp1, 0b01000000
 	and tmp0, tmp1
 	cpi	tmp0, 0			// check if the ADSC bit is 0 (ready)
-brne update_joystick_wait_X
+brne bring_the_noise
 
-	lds tmp0, ADCH
-
-	cpi tmp0, 96
-	brlo update_joystick_is_right
-	cpi tmp0, 161
-	brsh update_joystick_is_left
-// we only get here is both directions are neutral
-jmp dont_update_joystick_direction
-
-update_joystick_is_right:
-	ldi tmp2, 0b00000001
-jmp update_joystick_direction
-
-update_joystick_is_left:
-	ldi tmp2, 0b00000010
-jmp update_joystick_direction
-
-update_joystick_direction:
-// Update direction using tmp2 which is set by joystick code
-	ldi tmp0, 0b11110000
-	and tmp0, direction		// mask out relevant bits
-	or tmp0, tmp2			// or in direction bits
-	mov direction, tmp0
-
-dont_update_joystick_direction:
-ret
-
-// ----------------------------- Move and store snurkh -----------------------------
-update_snurkh:
-	push sav0
-	push sav1
-// Get head position
-	ldi XH, HIGH(snurkh_body)
-	ldi XL, LOW(snurkh_body)
-
-	ld tmp0, X				// Store head position in tmp0
-	clr sav0				// Clear sav0
-	or sav0, tmp0			// Load head position to sav0
-	
-	ldi tmp1, 0b00000111	// Mask for x
-	and tmp1, sav0			// Get x value
-
-	ldi tmp2, 0b00111000	// Mask for y
-	and tmp2, sav0			// Get y value
-	lsr tmp2				// Right align y bits
-	lsr tmp2
-	lsr tmp2
-
-	// sav0 = headbit
-	// tmp1 = xpos
-	// tmp2 = ypos
-
-	sbrs direction, 0		// Skip next if right = 1
-jmp dont_snurkh_right
-	subi tmp1, -1
-
-	sbrc tmp1, 3
-	subi tmp1, 8
-jmp snurkh_movement_done // no need to check other movement bits
-dont_snurkh_right:
-
-	sbrs direction, 1	// skip next if left = 1
-jmp dont_snurkh_left
-// if we are at 0 then set to 8 to wrap around
-	cpse tmp1, zero		// skip next skip if tmp1 = 0
-	cpse zero, zero		// always skip
-	ldi tmp1, 8
-	subi tmp1, 1
-jmp snurkh_movement_done // no need to check other movement bits
-dont_snurkh_left:
-
-	sbrs direction, 2	// skip next if up = 1
-jmp dont_snurkh_up
-// if we are at 0 then set to 8 to wrap around
-	cpse tmp2, zero
-	cpse zero, zero
-	ldi tmp2, 8
-	subi tmp2, 1
-jmp snurkh_movement_done // no need to check other movement bits
-dont_snurkh_up:
-
-	sbrs direction, 3	// skip next if down = 1
-jmp dont_snurkh_down
-	subi tmp2, -1 // tmp2++
-	sbrc tmp2, 3 // if tmp2 = 8
-	ldi tmp2, 0 // tmp2 = 0
-dont_snurkh_down:
-snurkh_movement_done:
-
-// Write snurkh head to light matrix
-	clr arg0
-	or arg0, tmp1
-	clr arg1
-	or arg1, tmp2
-	call set_bit
-
-// Write snurkh head to memory
-	lsl tmp2		// align y pos properly
-	lsl tmp2
-	lsl tmp2
-	or tmp2, tmp1	// or-together the positions
-	
-	clr sav1
-	or sav1, tmp2	// store new head position in sav1
-	st X+, tmp2		// store in memory and increment X
-
-// Draw fruit
-	ldi arg0, 0b00000111	// Mask for x
-	and arg0, fruit_pos		// Get x value
-	ldi arg1, 0b00111000	// Mask for y
-	and arg1, fruit_pos		// Get y value
-	lsr arg1				// Right align y bits
-	lsr arg1
-	lsr arg1
-	call set_bit			// Draw fruit
-
-// sav0 = old head position
-// sav1 = new head position
-
-// Check for food at head pos
-	ldi tmp0, 0b00111111	// Mask for position
-	and tmp0, fruit_pos		// Mask out position bits from fruit (prob not needed)
-	ldi tmp1, 0b00111111	// Mask for position
-	and tmp1, sav1			// Mask out position bits from new head position
-	cp tmp0, tmp1			// Check if head is at fruit pos
-	brne update_snurkh_loop // If positions differ, don't grow
-
-	// Grow
-	ldi tmp0, 0b10000000	// Mask for AFB
-	or sav1, tmp0			// Set ate_fruit_bit (AFB) at head
-
-update_snurkh_loop:
-	ldi arg0, 0b00000111	// Mask for x
-	and arg0, sav0			// Get x value
-
-	ldi arg1, 0b00111000	// Mask for y
-	and arg1, sav0			// Get y value
-
-	lsr arg1				// Right align y bits
-	lsr arg1
-	lsr arg1
-	call set_bit			// Draw snake part
-	
-	ldi tmp1, 0b01111111	// Mask for position and EoS
-	and tmp1, sav0			// Copy target position (except AFB)
-	ld sav0, X				// Fetch current position
-
-	// --- Check for collision with self ---
-	ldi tmp2, 0b00111111
-	and tmp2, sav1
-	ldi tmp3, 0b00111111
-	and tmp3, sav0
-	
-	// Restart on collision
-	sbrs sav0, 6
-	cpse tmp2, tmp3
-	cpse zero, zero
-	jmp init
-
-	sbrc sav0, 6			// if this isn't the tail
-	sbrs sav1, 7			// and we have no fruit
-jmp update_snurkh_paste_eos // do a little skip
-
-	ldi tmp2, 0b00111111	// clear register of eos and AFB flag bit
-	and tmp1, tmp2
-	st X+, tmp1				// save this part
-
-	clr tmp1
-	or tmp1, sav0			// copy the new tail piece
-
-update_snurkh_paste_eos:
-	ldi tmp2, 0b01000000	// paste over the EOS (end of snake) flag bit
-	and tmp2, sav0			// using mask
-	or tmp1, tmp2			// and copy the result to target position
-	st X+, tmp1				// store target position as current position
-	
-sbrs sav0, 6
-jmp update_snurkh_loop
-
-// fetch cur pos
-// stor tar pos
-// if end of snake && hasfood -> addpart
-// if not end of snake -> loop
-
-	pop sav1
-	pop sav0
+	lds arg0, ADCH
 ret
